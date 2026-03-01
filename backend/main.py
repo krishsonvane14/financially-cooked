@@ -39,6 +39,12 @@ class QuizAnswers(BaseModel):
     selected_theme: str
 
 
+class ExpenseTracker(BaseModel):
+    user_id: str
+    amount: float
+    description: str
+
+
 class PersonaGenerator:
     def __init__(self) -> None:
         self.core_by_cluster = {
@@ -182,6 +188,7 @@ def handle_quiz_submission(payload: QuizAnswers):
             "persona": generated["persona"],
             "theme_preference": generated["theme"],
             "monthly_limit": generated["limit"],
+            "roast": generated["roast"],
         }).execute()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
@@ -200,5 +207,55 @@ def get_leaderboard():
     try:
         response = supabase.table("profiles").select("id, username, persona, monthly_limit").order("monthly_limit", desc=False).execute()
         return {"rankings": response.data}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
+
+
+@app.get("/api/profile/{user_id}")
+def get_user_profile(user_id: str):
+    try:
+        response = (
+            supabase
+            .table("profiles")
+            .select("persona, theme_preference, monthly_limit, roast")
+            .eq("id", user_id)
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Profile not found")
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/spend")
+def log_expense(payload: ExpenseTracker):
+    try:
+        response = (
+            supabase
+            .table("profiles")
+            .select("monthly_limit")
+            .eq("id", payload.user_id)
+            .execute()
+        )
+        if not response.data:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        current_limit = response.data[0].get("monthly_limit", 0)
+        new_limit = current_limit - payload.amount
+
+        supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload.user_id).execute()
+
+        supabase.table("expenses").insert({
+            "user_id": payload.user_id,
+            "amount": payload.amount,
+            "description": payload.description,
+        }).execute()
+
+        return {"message": "Expense logged.", "new_limit": new_limit}
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database failure: {exc}")

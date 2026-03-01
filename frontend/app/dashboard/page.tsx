@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth, UserButton } from "@clerk/nextjs";
 import { useTheme, Theme } from "@/src/context/ThemeContext";
 import SabotageAttackModal, { Player } from "@/components/SabotageAttackModal";
@@ -49,12 +48,58 @@ const MOCK_PLAYERS: Player[] = [
 export default function DashboardPage() {
   const { userId } = useAuth();
   const { theme, setTheme } = useTheme();
-  const router = useRouter();
+
+  const [profile, setProfile] = useState<{
+    persona: string;
+    theme_preference: string;
+    monthly_limit: number;
+    roast?: string;
+  } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const [sfxEnabled, setSfxEnabled] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const cfg = THEME_CONFIG[theme];
+
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!userId) {
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/profile/${userId}`);
+
+        if (res.status === 404) {
+          setProfile(null);
+          return;
+        }
+
+        if (!res.ok) {
+          const errorPayload = await res.text();
+          console.error("Failed to fetch profile:", errorPayload);
+          setProfile(null);
+          return;
+        }
+
+        const data = await res.json();
+        setProfile(data);
+
+        if (data?.theme_preference && data.theme_preference in THEME_CONFIG) {
+          setTheme(data.theme_preference as Theme);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+        setProfile(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    }
+
+    fetchProfile();
+  }, [setTheme, userId]);
 
   // Play theme SFX when theme has one and user opted in
   useEffect(() => {
@@ -139,16 +184,26 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center gap-4">
             <span className="text-4xl">💸</span>
             <p className="text-sm font-bold text-zinc-400">Monthly Budget</p>
-            <p className="text-3xl font-black">$0.00</p>
-            <p className="text-xs text-zinc-600">Complete the quiz to unlock</p>
+            <p className="text-3xl font-black">
+              {profileLoading
+                ? "Loading..."
+                : `$${(profile?.monthly_limit ?? 0).toFixed(2)}`}
+            </p>
+            <p className="text-xs text-zinc-600">
+              {profile ? "Live from your profile" : "Complete the quiz to unlock"}
+            </p>
           </div>
 
           {/* Persona card placeholder */}
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 flex flex-col items-center gap-4">
             <span className="text-4xl">🎭</span>
             <p className="text-sm font-bold text-zinc-400">Your Persona</p>
-            <p className="text-lg font-black">???</p>
-            <p className="text-xs text-zinc-600">AI-assigned after the quiz</p>
+            <p className="text-lg font-black text-center">
+              {profileLoading ? "Loading..." : profile?.persona ?? "???"}
+            </p>
+            <p className="text-xs text-zinc-600 text-center">
+              {profile?.roast ?? "AI-assigned after the quiz"}
+            </p>
           </div>
         </section>
 
