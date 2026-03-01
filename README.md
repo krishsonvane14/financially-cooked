@@ -1,4 +1,4 @@
-# 🍳🔥 Financially Cooked
+# 🔥 Financially Cooked
 
 A multiplayer financial tracker that uses machine learning to calculate your *real* budget, roast your bad habits, and let your friends hold you accountable.
 
@@ -154,7 +154,24 @@ Visualization dashboard for spending clusters
 
 ## 👨‍💻 Contributors
 
-Built by Palash Dalsaniya and Krish Sonvane.
+## Krish Sonvane (SFU Computing Science)
+
+### Backend Architect:
+
+- ML Engine: Developed and trained the K-Means clustering model using scikit-learn to categorize user spending behavior into behavioral clusters.
+- Group Math Logic: Engineered the PostgreSQL View and Python logic for the "Zeno's Paradox" settlement algorithm, ensuring net-zero debt resolution across groups.
+- API Development: Built the FastAPI backend with strict Pydantic validation to handle the complex "Vibe Check" payloads and real-time expense splitting.
+- DevOps & Infrastructure: Orchestrated the entire deployment pipeline, managing Render for the Python server and Vercel for the Next.js frontend, while maintaining the Supabase database schema and RLS policies.
+
+## Palash Dalsaniya (SFU Engineering Science)
+
+### Frontend Lead & UX Engineer:
+
+- UI/UX Design: Built the responsive, dark-mode dashboard using Next.js, Tailwind CSS, and shadcn/ui, including the dynamic "Brainrot" and "Girl Math" themes.
+- Complex State Management: Developed the frontend logic for the Debt Ledger and Expense Log, ensuring that the UI reflects real-time budget refunds and settlement calculations without page reloads.
+- Authentication & Identity: Integrated Clerk for secure user onboarding and custom profile synchronization, ensuring every user is assigned their specific ML-generated persona.
+
+    
 
 
 
