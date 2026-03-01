@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from "@/src/context/ThemeContext";
-import "./globals.css"; // Assuming your standard Tailwind imports are here
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Financially Cooked",
@@ -13,13 +14,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      {/* We leave the body class empty here because the ThemeProvider manages it */}
-      <body>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
