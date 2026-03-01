@@ -1,10 +1,16 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isPublicRoute = createRouteMatcher(['/']);
+// Only the landing page is public. Everything else (/quiz, /dashboard, etc.)
+// requires authentication via auth.protect().
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
-    await auth.protect(); // Notice the 'async' and 'await' here!
+    await auth.protect();
   }
 });
 
