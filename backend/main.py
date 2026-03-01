@@ -458,7 +458,7 @@ async def scan_calendar(user_id: str, file: UploadFile = File(...)):
             raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
 
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
 
         # 2. Read the uploaded file
         file_bytes = await file.read()
