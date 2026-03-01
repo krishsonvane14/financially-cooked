@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { Loader2, Users } from "lucide-react";
 import GroupManager, { Group } from "@/components/GroupManager";
 import SplitExpenseForm from "@/components/SplitExpenseForm";
+import DebtLedger from "@/components/DebtLedger";
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
@@ -86,26 +87,31 @@ export default function GroupsPage() {
               <p className="text-sm text-zinc-500">No groups yet. Create one above to get started.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {groups.map((g) => (
                 <div
                   key={g.id}
-                  className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm"
+                  className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm space-y-4"
                 >
-                  <h3 className="font-bold text-zinc-100 truncate">{g.name}</h3>
-                  <p className="mt-1 text-xs text-zinc-500">
-                    {g.members.length} member{g.members.length !== 1 ? "s" : ""}
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-1">
-                    {g.members.map((mid) => (
-                      <span
-                        key={mid}
-                        className="inline-block rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400"
-                      >
-                        {mid === userId ? "You" : mid.slice(0, 8) + "…"}
-                      </span>
-                    ))}
+                  <div>
+                    <h3 className="font-bold text-zinc-100 truncate">{g.name}</h3>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {g.members.length} member{g.members.length !== 1 ? "s" : ""}
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {g.members.map((mid) => (
+                        <span
+                          key={mid}
+                          className="inline-block rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400"
+                        >
+                          {mid === userId ? "You" : mid.slice(0, 8) + "…"}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Debt Ledger for this group */}
+                  <DebtLedger groupId={g.id} currentUserId={userId} />
                 </div>
               ))}
             </div>

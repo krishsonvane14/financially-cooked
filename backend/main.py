@@ -362,8 +362,75 @@ def get_user_groups(user_id: str):
         return {"groups": enriched}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+class SettleDebt(BaseModel):
+    user_id: str
+    group_id: str
     amount: float
-    description: str
+
+
+@app.get("/api/groups/{group_id}/balances")
+def get_group_balances(group_id: str):
+    """Compute net balance for every member in a group.
+
+    Positive net_balance → user owes the group.
+    Negative net_balance → group owes the user (they overpaid).
+    """
+    try:
+        # 1. Get all members
+        members_res = (
+            supabase.table("group_members")
+            .select("user_id")
+            .eq("group_id", group_id)
+            .execute()
+        )
+        member_ids = [m["user_id"] for m in (members_res.data or [])]
+        if not member_ids:
+            return {"balances": []}
+
+        # 2. Fetch all expenses in this group
+        expenses_res = (
+            supabase.table("expenses")
+            .select("user_id, amount")
+            .eq("group_id", group_id)
+            .execute()
+        )
+
+        # 3. Sum per member
+        totals: dict[str, float] = {uid: 0.0 for uid in member_ids}
+        for row in expenses_res.data or []:
+            uid = row["user_id"]
+            if uid in totals:
+                totals[uid] += row["amount"]
+
+        # 4. Average across all members
+        grand_total = sum(totals.values())
+        avg = grand_total / len(member_ids) if member_ids else 0
+
+        # 5. Fetch usernames for display
+        profiles = (
+            supabase.table("profiles")
+            .select("id, username")
+            .in_("id", member_ids)
+            .execute()
+        )
+        name_map = {p["id"]: p.get("username") or p["id"][:8] for p in (profiles.data or [])}
+
+        balances = []
+        for uid in member_ids:
+            net = round(totals[uid] - avg, 2)
+            balances.append({
+                "user_id": uid,
+                "username": name_map.get(uid, uid[:8]),
+                "total_spent": round(totals[uid], 2),
+                "net_balance": net,
+            })
+
+        return {"balances": balances}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
 
 @app.post("/api/groups/split")
 def split_group_expense(payload: GroupExpense):
@@ -400,27 +467,27 @@ def split_group_expense(payload: GroupExpense):
         raise HTTPException(status_code=500, detail=str(exc))
 
 @app.post("/api/groups/settle")
-def settle_group_debt(payload: dict):
-    # Payload format: {"user_id": str, "group_id": str, "amount": float}
+def settle_group_debt(payload: SettleDebt):
     try:
         # 1. Fetch current monthly limit for the user
-        res = supabase.table("profiles").select("monthly_limit").eq("id", payload["user_id"]).execute()
+        res = supabase.table("profiles").select("monthly_limit").eq("id", payload.user_id).execute()
         if not res.data:
             raise HTTPException(status_code=404, detail="User not found")
             
         # 2. Add the settled amount back to their budget
-        new_limit = res.data[0]["monthly_limit"] + payload["amount"]
-        supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload["user_id"]).execute()
+        new_limit = res.data[0]["monthly_limit"] + payload.amount
+        supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload.user_id).execute()
         
         # 3. Log a "negative" expense so the charts reflect the repayment
         supabase.table("expenses").insert({
-            "user_id": payload["user_id"],
-            "amount": -payload["amount"], 
-            "description": "Debt Settlement",
-            "group_id": payload["group_id"],
-            "category": "Settlement"
+            "user_id": payload.user_id,
+            "amount": -payload.amount, 
+            "category": "settlement",
+            "group_id": payload.group_id,
         }).execute()
         
         return {"message": "Debt settled. You are slightly less cooked.", "new_limit": new_limit}
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
