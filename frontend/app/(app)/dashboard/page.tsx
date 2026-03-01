@@ -180,7 +180,7 @@ export default function DashboardPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let result: { data: any[] | null; error: any } = await supabase
         .from("expenses")
-        .select("id, amount, category, description, created_at")
+        .select("id, amount, category, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
@@ -189,7 +189,7 @@ export default function DashboardPage() {
         // Retry without created_at ordering in case column is missing
         result = await supabase
           .from("expenses")
-          .select("id, amount, category, description")
+          .select("id, amount, category")
           .eq("user_id", userId);
 
         if (result.error) {
@@ -353,7 +353,7 @@ export default function DashboardPage() {
   const pieChartData = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of expenses) {
-      const cat = e.category || e.description || "other";
+      const cat = e.category || "other";
       map[cat] = (map[cat] ?? 0) + e.amount;
     }
     return Object.entries(map)
