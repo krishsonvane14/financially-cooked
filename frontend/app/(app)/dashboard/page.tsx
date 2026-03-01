@@ -17,6 +17,7 @@ import SabotageAttackModal, { Player } from "@/components/SabotageAttackModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useTheme, Theme } from "@/src/context/ThemeContext";
+import { supabase } from "@/lib/supabase";
 
 /* ── Types ──────────────────────────────────────────────────────────────── */
 
@@ -44,7 +45,7 @@ const THEME_VIZ: Record<Theme, { sfx?: string }> = {
 
 const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const isTheme = (v: string): v is Theme => v === "vanilla" || v === "brainrot" || v === "girlmath";
-const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
 /* ── Component ──────────────────────────────────────────────────────────── */
 
@@ -58,7 +59,9 @@ export default function DashboardPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [playersLoading, setPlayersLoading] = useState(true);
   const [sfxEnabled, setSfxEnabled] = useState(false);
+  const [isUnderAttack, setIsUnderAttack] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const attackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* ── Fetch profile ──────────────────────────────────────────────────── */
 
@@ -80,6 +83,56 @@ export default function DashboardPage() {
       finally { setProfileLoading(false); }
     })();
   }, [setTheme, userId]);
+
+  /* ── Realtime profile subscription ───────────────────────────────── */
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`profile-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${userId}`,
+        },
+        (payload) => {
+          const row = payload.new as Record<string, unknown>;
+          const newLimit = (row.monthly_limit as number) ?? 0;
+
+          setProfile((prev) => {
+            // Detect budget decrease → retaliation effect
+            if (prev && newLimit < prev.monthly_limit) {
+              // Play vine boom
+              const boom = new Audio("/assets/sound-effects/vine-boom.mp3");
+              boom.volume = 0.6;
+              boom.play().catch(() => {});
+
+              // Trigger screen shake for 3 seconds
+              setIsUnderAttack(true);
+              if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
+              attackTimerRef.current = setTimeout(() => setIsUnderAttack(false), 3000);
+            }
+
+            return {
+              persona: (row.persona as string) ?? prev?.persona ?? "???",
+              theme_preference: (row.theme_preference as string) ?? prev?.theme_preference ?? "vanilla",
+              monthly_limit: newLimit,
+              roast: (row.roast as string) ?? prev?.roast,
+            };
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
+    };
+  }, [userId]);
 
   /* ── Fetch leaderboard for sabotage targets ─────────────────────────── */
 
@@ -162,7 +215,11 @@ export default function DashboardPage() {
   /* ── Render ─────────────────────────────────────────────────────────── */
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className={`flex-1 overflow-y-auto transition-all duration-200 ${
+      isUnderAttack
+        ? "animate-[screen-shake_0.15s_ease-in-out_infinite] ring-4 ring-red-500/60 ring-inset"
+        : ""
+    }`}>
       {/* Top bar */}
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-6">
         <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Dashboard</h2>
