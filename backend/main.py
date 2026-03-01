@@ -398,3 +398,29 @@ def split_group_expense(payload: GroupExpense):
         return {"message": f"Successfully split ${payload.amount} between {member_count} people."}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+@app.post("/api/groups/settle")
+def settle_group_debt(payload: dict):
+    # Payload format: {"user_id": str, "group_id": str, "amount": float}
+    try:
+        # 1. Fetch current monthly limit for the user
+        res = supabase.table("profiles").select("monthly_limit").eq("id", payload["user_id"]).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        # 2. Add the settled amount back to their budget
+        new_limit = res.data[0]["monthly_limit"] + payload["amount"]
+        supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload["user_id"]).execute()
+        
+        # 3. Log a "negative" expense so the charts reflect the repayment
+        supabase.table("expenses").insert({
+            "user_id": payload["user_id"],
+            "amount": -payload["amount"], 
+            "description": "Debt Settlement",
+            "group_id": payload["group_id"],
+            "category": "Settlement"
+        }).execute()
+        
+        return {"message": "Debt settled. You are slightly less cooked.", "new_limit": new_limit}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
