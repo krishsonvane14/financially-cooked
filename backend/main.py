@@ -390,3 +390,28 @@ def settle_group_debt(payload: SettleDebt):
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+@app.post("/api/groups/split")
+def split_group_expense(payload: GroupExpense):
+    try:
+        # 1. Fetch current monthly limit for the person who paid
+        res = supabase.table("profiles").select("monthly_limit").eq("id", payload.payer_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Payer not found")
+            
+        # 2. Deduct the FULL amount from the payer's budget
+        new_limit = res.data[0]["monthly_limit"] - payload.amount
+        supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload.payer_id).execute()
+        
+        # 3. Log ONE expense for the full amount so the ledger calculates debt
+        supabase.table("expenses").insert({
+            "user_id": payload.payer_id,
+            "amount": payload.amount,
+            "description": payload.description,
+            "group_id": payload.group_id,
+            "category": "Shared Expense" # This prevents the dashboard PieChart from crashing!
+        }).execute()
+
+        return {"message": "Split expense logged! The group now owes you money."}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
