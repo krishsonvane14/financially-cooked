@@ -60,7 +60,7 @@ interface Expense {
 
 const THEME_VIZ: Record<Theme, { sfx?: string }> = {
   vanilla: {},
-  brainrot: { sfx: "/assets/sound-effects/fahh-but-louder.mp3" },
+  brainrot: { sfx: "/assets/sound-effects/shimmy-shimmy-ay.mp3" },
   girlmath: { sfx: "/assets/sound-effects/girlmath.mp3" },
 };
 
