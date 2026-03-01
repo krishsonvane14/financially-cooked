@@ -6,7 +6,7 @@ import { useAuth, UserButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Trophy,
-  Crosshair,
+  Users,
   Moon,
   Sun,
   Flame,
@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/groups", label: "Groups", icon: Users },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
 ];
 

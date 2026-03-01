@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/src/context/ThemeContext";
 import { DarkModeProvider } from "@/src/context/DarkModeContext";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,6 +22,17 @@ export default function RootLayout({
           <ThemeProvider>
             <DarkModeProvider>
               {children}
+              <Toaster
+                theme="dark"
+                position="bottom-right"
+                toastOptions={{
+                  style: {
+                    background: "#18181b",
+                    border: "1px solid #27272a",
+                    color: "#f4f4f5",
+                  },
+                }}
+              />
             </DarkModeProvider>
           </ThemeProvider>
         </body>

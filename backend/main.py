@@ -264,3 +264,137 @@ def log_expense(payload: ExpenseTracker):
         raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
+
+class GroupExpense(BaseModel):
+    group_id: str
+    payer_id: str
+    amount: float
+    description: str
+
+
+class CreateGroup(BaseModel):
+    name: str
+    created_by: str
+
+
+class AddGroupMembers(BaseModel):
+    group_id: str
+    user_ids: list[str]
+
+
+# ── Group endpoints ──────────────────────────────────────────────────────────
+
+
+@app.get("/api/profiles/all")
+def get_all_profiles():
+    """Return every profile (id + username) for the member picker."""
+    try:
+        response = supabase.table("profiles").select("id, username").execute()
+        return {"profiles": response.data or []}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/groups")
+def create_group(payload: CreateGroup):
+    """Insert a new row into the `groups` table and return it."""
+    try:
+        result = (
+            supabase.table("groups")
+            .insert({"name": payload.name, "created_by": payload.created_by})
+            .execute()
+        )
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create group")
+        return {"group": result.data[0]}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/groups/members")
+def add_group_members(payload: AddGroupMembers):
+    """Bulk-insert rows into `group_members` for the given group."""
+    try:
+        rows = [{"group_id": payload.group_id, "user_id": uid} for uid in payload.user_ids]
+        supabase.table("group_members").insert(rows).execute()
+        return {"message": f"Added {len(rows)} member(s) to the group."}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/groups/{user_id}")
+def get_user_groups(user_id: str):
+    """Return all groups a user belongs to (with member list)."""
+    try:
+        # Get group IDs the user is a member of
+        memberships = (
+            supabase.table("group_members")
+            .select("group_id")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        group_ids = [m["group_id"] for m in (memberships.data or [])]
+        if not group_ids:
+            return {"groups": []}
+
+        # Fetch group details
+        groups = (
+            supabase.table("groups")
+            .select("id, name, created_by")
+            .in_("id", group_ids)
+            .execute()
+        )
+
+        # Attach members to each group
+        enriched = []
+        for g in groups.data or []:
+            members = (
+                supabase.table("group_members")
+                .select("user_id")
+                .eq("group_id", g["id"])
+                .execute()
+            )
+            g["members"] = [m["user_id"] for m in (members.data or [])]
+            enriched.append(g)
+
+        return {"groups": enriched}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    amount: float
+    description: str
+
+@app.post("/api/groups/split")
+def split_group_expense(payload: GroupExpense):
+    try:
+        # 1. Find all members in the group
+        members = supabase.table("group_members").select("user_id").eq("group_id", payload.group_id).execute()
+        member_count = len(members.data)
+        
+        if member_count == 0:
+            raise HTTPException(status_code=400, detail="Group has no members")
+
+        split_amount = round(payload.amount / member_count, 2)
+
+        # 2. Deduct the split amount from EVERY member's monthly_limit
+        for member in members.data:
+            user_id = member["user_id"]
+            
+            # Fetch current limit
+            res = supabase.table("profiles").select("monthly_limit").eq("id", user_id).execute()
+            if res.data:
+                new_limit = res.data[0]["monthly_limit"] - split_amount
+                supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", user_id).execute()
+                
+                # Log the individual expense for each person
+                supabase.table("expenses").insert({
+                    "user_id": user_id,
+                    "amount": split_amount,
+                    "description": f"Split: {payload.description} (Paid by {payload.payer_id})",
+                    "group_id": payload.group_id
+                }).execute()
+
+        return {"message": f"Successfully split ${payload.amount} between {member_count} people."}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
