@@ -240,7 +240,7 @@ export default function Home() {
             >
               <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-bg)]/50">
                 <img
-                  src="/assets/dummy-vanilla.gif"
+                  src="/assets/themes/vanilla.png"
                   alt="Vanilla theme"
                   className="h-48 w-full object-cover opacity-80 transition group-hover:scale-105 group-hover:opacity-100"
                 />
@@ -265,7 +265,7 @@ export default function Home() {
             >
               <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--theme-primary)]/20 bg-[var(--theme-primary)]/10">
                 <img
-                  src="/assets/dummy-brainrot.gif"
+                  src="/assets/themes/brainrot.png"
                   alt="Brainrot theme"
                   className="h-48 w-full object-cover opacity-80 transition group-hover:scale-105 group-hover:opacity-100"
                 />
@@ -295,7 +295,7 @@ export default function Home() {
             >
               <div className="mb-6 overflow-hidden rounded-2xl border border-pink-500/20 bg-pink-500/10">
                 <img
-                  src="/assets/dummy-girlmath.gif"
+                  src="/assets/themes/girl-math.png"
                   alt="Girl Math theme"
                   className="h-48 w-full object-cover opacity-80 transition group-hover:scale-105 group-hover:opacity-100"
                 />
