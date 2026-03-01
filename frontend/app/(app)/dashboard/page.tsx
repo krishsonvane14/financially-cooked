@@ -26,6 +26,7 @@ import {
 } from "recharts";
 import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseLog from "@/components/ExpenseLog";
+import UploadScanner from "@/components/UploadScanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useTheme, Theme } from "@/src/context/ThemeContext";
@@ -488,7 +489,13 @@ export default function DashboardPage() {
         )}
 
         {/* ── Expense Form + Expense Log (2-col) ── */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section className="space-y-4">
+          {userId && (
+            <div className="flex justify-end">
+              <UploadScanner userId={userId} onBudgetUpdate={() => { fetchProfile(); fetchExpenses(); }} />
+            </div>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-6 shadow-sm">
             <ExpenseForm userId={userId ?? null} onSubmit={() => fetchExpenses()} />
           </div>
@@ -499,6 +506,7 @@ export default function DashboardPage() {
                 onBudgetUpdate={() => { fetchProfile(); fetchExpenses(); }}
               />
             )}
+          </div>
           </div>
         </section>
 

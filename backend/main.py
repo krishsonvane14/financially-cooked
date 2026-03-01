@@ -1,10 +1,13 @@
 import os
+import json
+import re
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 from supabase import Client, create_client
+import google.generativeai as genai
 
 # 1. Environment & Database Setup
 load_dotenv()
@@ -441,5 +444,76 @@ def delete_expense(expense_id: str):
             supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", user_id).execute()
 
         return {"message": "Expense deleted and budget refunded.", "new_limit": new_limit}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+# 6. Gemini AI Calendar Scanner
+
+@app.post("/api/scan-calendar")
+async def scan_calendar(user_id: str, file: UploadFile = File(...)):
+    try:
+        # 1. Initialize Gemini
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
+
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        # 2. Read the uploaded file
+        file_bytes = await file.read()
+        mime_type = file.content_type or "image/png"
+
+        # 3. Send to Gemini with our extraction prompt
+        response = model.generate_content(
+            [
+                {
+                    "mime_type": mime_type,
+                    "data": file_bytes,
+                },
+                "Extract expenses from this digital calendar screenshot. "
+                "Return strictly valid JSON array with keys: "
+                "date (YYYY-MM-DD), description (string), and amount (number). "
+                "Strip currency symbols.",
+            ]
+        )
+
+        # 4. Clean markdown fences and parse JSON
+        raw_text = response.text.strip()
+        cleaned = re.sub(r"^```(?:json)?\s*", "", raw_text)
+        cleaned = re.sub(r"\s*```$", "", cleaned).strip()
+        extracted: list[dict] = json.loads(cleaned)
+
+        # 5. Insert each expense and deduct from budget
+        inserted = []
+        for item in extracted:
+            amount = float(item.get("amount", 0))
+            description = str(item.get("description", "Imported expense"))
+
+            if amount <= 0:
+                continue
+
+            # Insert expense row
+            supabase.table("expenses").insert({
+                "user_id": user_id,
+                "amount": amount,
+                "description": description,
+                "category": "Imported",
+            }).execute()
+
+            # Deduct from monthly limit
+            prof_res = supabase.table("profiles").select("monthly_limit").eq("id", user_id).execute()
+            if prof_res.data:
+                current_limit = prof_res.data[0]["monthly_limit"]
+                new_limit = current_limit - amount
+                supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", user_id).execute()
+
+            inserted.append({"description": description, "amount": amount})
+
+        return {"message": f"Imported {len(inserted)} expense(s) from scan.", "expenses": inserted}
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=422, detail="Gemini returned invalid JSON. Try a clearer image.")
+    except HTTPException:
+        raise
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
