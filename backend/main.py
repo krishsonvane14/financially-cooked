@@ -179,6 +179,7 @@ def handle_quiz_submission(payload: QuizAnswers):
             "id": payload.user_id,
             "persona": generated["persona"],
             "theme_preference": generated["theme"],
+            "monthly_limit": generated["limit"],
         }).execute()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
@@ -191,3 +192,11 @@ def handle_quiz_submission(payload: QuizAnswers):
         "theme": generated["theme"],
         "roast": generated["roast"],
     }
+
+@app.get("/api/leaderboard")
+def get_leaderboard():
+    try:
+        response = supabase.table("profiles").select("id, persona, monthly_limit").order("monthly_limit", desc=False).execute()
+        return {"rankings": response.data}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Database failure: {exc}") 
