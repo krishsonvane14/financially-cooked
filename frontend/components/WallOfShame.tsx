@@ -30,7 +30,7 @@ export default function WallOfShame() {
     async function fetchLeaderboard() {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/leaderboard`
         );
 
         if (!res.ok) {
