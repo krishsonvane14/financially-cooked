@@ -364,26 +364,26 @@ export default function DashboardPage() {
         {profileLoading ? (
           <Skeleton className="h-44 w-full rounded-2xl" />
         ) : (
-          <section className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-8 shadow-sm dark:shadow-[inset_0_0_80px_rgba(239,68,68,0.05)]">
+          <section className="relative overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-8 shadow-sm">
             {/* subtle accent glow */}
-            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-red-500/5 blur-[80px]" />
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[var(--theme-primary)]/5 blur-[80px]" />
             <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">
                   Current Diagnosis
                 </p>
-                <h1 className="mt-2 truncate text-4xl font-black leading-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+                <h1 className="mt-2 truncate text-4xl font-black leading-tight text-[var(--theme-text)] sm:text-5xl">
                   {profile?.persona ?? (
                     <span className="text-zinc-400">Take the quiz first</span>
                   )}
                 </h1>
-                <p className="mt-2 max-w-md text-sm text-zinc-500">
+                <p className="mt-2 max-w-md text-sm text-[var(--theme-text-muted)]">
                   {roast}
                 </p>
               </div>
               <div className="shrink-0 flex items-center gap-3">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 ring-1 ring-red-500/20">
-                  <User className="h-8 w-8 text-red-500" />
+                  <User className="h-8 w-8 text-[var(--theme-primary)]" />
                 </div>
                 {isCooked && (
                   <span className="rounded-full bg-red-500 px-3 py-1 text-xs font-black text-white animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.4)]">
@@ -407,13 +407,13 @@ export default function DashboardPage() {
             {metrics.map((m) => (
               <div
                 key={m.label}
-                className="group relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm transition-shadow hover:shadow-md"
+                className="group relative overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-5 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex items-start justify-between">
                   <div className="min-w-0">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">{m.label}</p>
-                    <p className="mt-2 truncate text-2xl font-black text-zinc-900 dark:text-zinc-100">{m.value}</p>
-                    <p className="mt-1 truncate text-xs text-zinc-500">{m.sub}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">{m.label}</p>
+                    <p className="mt-2 truncate text-2xl font-black text-[var(--theme-text)]">{m.value}</p>
+                    <p className="mt-1 truncate text-xs text-[var(--theme-text-muted)]">{m.sub}</p>
                   </div>
                   <div className={`shrink-0 rounded-xl p-2.5 ring-1 ${m.ring} ${m.accent}`}>
                     {m.icon}
@@ -426,7 +426,7 @@ export default function DashboardPage() {
 
         {/* ── Cooked Progression Meter ── */}
         {!profileLoading && monthlyLimit > 0 && (
-          <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm">
+          <section className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-5 shadow-sm">
             <CookedMeter pct={spentPct} />
           </section>
         )}
@@ -435,8 +435,8 @@ export default function DashboardPage() {
         {!expensesLoading && expenses.length > 0 && (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Spending over time */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm">
-              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Spending Over Time</p>
+            <div className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-5 shadow-sm">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">Spending Over Time</p>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={lineChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
@@ -457,8 +457,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Expenses by category */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm">
-              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Expenses by Category</p>
+            <div className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-5 shadow-sm">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">Expenses by Category</p>
               <div className="flex items-center gap-4">
                 <ResponsiveContainer width="50%" height={220}>
                   <PieChart>
@@ -477,8 +477,8 @@ export default function DashboardPage() {
                   {pieChartData.map((c) => (
                     <div key={c.name} className="flex items-center gap-2 text-xs">
                       <div className="h-3 w-3 rounded-full shrink-0" style={{ background: c.fill }} />
-                      <span className="text-zinc-500 dark:text-zinc-400">{c.name}</span>
-                      <span className="ml-auto font-mono font-bold tabular-nums text-zinc-800 dark:text-zinc-200">{USD.format(c.value)}</span>
+                      <span className="text-[var(--theme-text-muted)]">{c.name}</span>
+                      <span className="ml-auto font-mono font-bold tabular-nums text-[var(--theme-text)]">{USD.format(c.value)}</span>
                     </div>
                   ))}
                 </div>
@@ -488,7 +488,7 @@ export default function DashboardPage() {
         )}
 
         {/* ── Expense Form (full-width) ── */}
-        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-6 shadow-sm">
+        <section className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-6 shadow-sm">
           <ExpenseForm userId={userId ?? null} onSubmit={() => fetchExpenses()} />
         </section>
 
@@ -499,7 +499,7 @@ export default function DashboardPage() {
               size="icon"
               variant="outline"
               onClick={() => setSfxEnabled((p) => !p)}
-              className="h-10 w-10 rounded-full border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg"
+              className="h-10 w-10 rounded-full border-[var(--theme-border)] bg-[var(--theme-card)] shadow-lg"
             >
               {sfxEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </Button>

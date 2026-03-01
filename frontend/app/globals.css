@@ -89,9 +89,11 @@
   }
 }
 
+/* Force the body background and text to use the variables */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -134,7 +136,53 @@ body {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+  }
+
+  /* =========================================
+     VANILLA THEME (Default) + BRAINROT (same palette)
+     ========================================= */
+  :root, .vanilla, .brainrot {
+    --theme-bg: #fafafa;
+    --theme-sidebar: #ffffff;
+    --theme-card: rgba(255, 255, 255, 0.8);
+    --theme-border: #e4e4e7;
+    --theme-primary: #ef4444; /* Cooked Red */
+    --theme-text: #09090b;
+    --theme-text-muted: #71717a;
+  }
+
+  .dark, .dark.vanilla, .dark .vanilla, .dark.brainrot, .dark .brainrot {
+    --theme-bg: #050505; /* True Dark */
+    --theme-sidebar: #09090b;
+    --theme-card: rgba(24, 24, 27, 0.4);
+    --theme-border: #27272a;
+    --theme-primary: #dc2626; /* Slightly darker red for dark mode */
+    --theme-text: #fafafa;
+    --theme-text-muted: #a1a1aa;
+  }
+
+  /* =========================================
+     GIRL MATH THEME
+     ========================================= */
+  .girlmath {
+    --theme-bg: #fce7f3; /* Cherry blossom */
+    --theme-sidebar: #fbcfe8; /* Soft pink sidebar */
+    --theme-card: rgba(255, 255, 255, 0.6);
+    --theme-border: #f9a8d4;
+    --theme-primary: #ec4899; /* Vibrant Pink accent */
+    --theme-text: #50183c;
+    --theme-text-muted: #831843;
+  }
+
+  .dark .girlmath, .dark.girlmath {
+    --theme-bg: #0f050c; /* Almost black, slight pink tint */
+    --theme-sidebar: #1f0b18; /* Dark plum sidebar */
+    --theme-card: rgba(80, 24, 60, 0.2);
+    --theme-border: #63264a;
+    --theme-primary: #f472b6; /* Bright pink for dark mode contrast */
+    --theme-text: #fce7f3;
+    --theme-text-muted: #fbcfe8;
   }
 }
 

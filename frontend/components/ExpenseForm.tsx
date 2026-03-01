@@ -31,6 +31,13 @@ const BRAINROT_SFX = [
   "/assets/sound-effects/metal-pipe-clang.mp3",
   "/assets/sound-effects/fart-meme-sound.mp3",
   "/assets/sound-effects/taco-bell-bong-sfx.mp3",
+  "/assets/sound-effects/spongebob-fail.mp3",
+  "/assets/sound-effects/perfect-fart.mp3",
+  "/assets/sound-effects/money-soundfx.mp3",
+  "/assets/sound-effects/crazy-realistic-knocking-sound-troll-twitch-streamers_small.mp3",
+  "/assets/sound-effects/discord-notification.mp3",
+  "/assets/sound-effects/your-broke-andrew-tate_fQJoCVt.mp3",
+  "/assets/sound-effects/500-cigarettes-tiktok-version.mp3",
 ];
 
 function playRandomSfx() {

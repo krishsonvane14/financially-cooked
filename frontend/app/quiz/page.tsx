@@ -293,9 +293,9 @@ export default function QuizPage() {
   /* ════════════════════ RESULTS SCREEN ════════════════════ */
   if (result) {
     return (
-      <main className="relative min-h-screen overflow-hidden bg-zinc-950 text-white">
+      <main className="relative min-h-screen overflow-hidden bg-[var(--theme-bg)] text-[var(--theme-text)]">
         {/* glow */}
-        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-red-500/10 blur-[160px]" />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-[var(--theme-primary)]/10 blur-[160px]" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -307,7 +307,7 @@ export default function QuizPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-red-400"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--theme-primary)]/20 bg-[var(--theme-primary)]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[var(--theme-primary)]"
           >
             <Skull className="h-3.5 w-3.5" /> Diagnosis Complete
           </motion.div>
@@ -316,7 +316,7 @@ export default function QuizPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            className="text-5xl font-black text-red-500 drop-shadow-[0_0_25px_rgba(239,68,68,0.5)] sm:text-6xl"
+            className="text-5xl font-black text-[var(--theme-primary)] drop-shadow-[0_0_25px_rgba(239,68,68,0.5)] sm:text-6xl"
           >
             {result.persona}
           </motion.h1>
@@ -325,17 +325,17 @@ export default function QuizPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-8 backdrop-blur"
+            className="w-full rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-8 backdrop-blur-xl shadow-sm"
           >
-            <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+            <p className="text-xs font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">
               Monthly Budget Allowed
             </p>
-            <p className="mt-2 text-5xl font-black tabular-nums">
+            <p className="mt-2 text-5xl font-black tabular-nums text-[var(--theme-text)]">
               ${result.monthly_limit?.toFixed(2) || "0.00"}
             </p>
-            <p className="mt-3 text-sm text-zinc-500">
+            <p className="mt-3 text-sm text-[var(--theme-text-muted)]">
               Theme locked to{" "}
-              <span className="font-bold text-red-400">{result.recommended_theme}</span>
+              <span className="font-bold text-[var(--theme-primary)]">{result.recommended_theme}</span>
             </p>
           </motion.div>
 
@@ -347,17 +347,17 @@ export default function QuizPage() {
           >
             <button
               onClick={() => router.push("/dashboard")}
-              className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-red-500 py-5 text-lg font-black text-white shadow-[0_0_40px_rgba(239,68,68,0.35)] transition-all hover:scale-[1.02] hover:shadow-[0_0_60px_rgba(239,68,68,0.5)] active:scale-95"
+              className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-[var(--theme-primary)] py-5 text-lg font-black text-[var(--theme-bg)] shadow-lg transition-all hover:scale-[1.02] hover:opacity-90 active:scale-95"
             >
               <Flame className="h-5 w-5 transition group-hover:rotate-12" />
               GO TO DASHBOARD
               <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" />
-              <span className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-red-500/20" />
+              <span className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-[var(--theme-primary)]/20" />
             </button>
 
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 py-3 text-sm font-bold text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-200"
+              className="flex items-center justify-center gap-2 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] py-3 text-sm font-bold text-[var(--theme-text-muted)] transition hover:opacity-80"
             >
               <RotateCcw className="h-4 w-4" /> Retake Quiz
             </button>
@@ -369,7 +369,7 @@ export default function QuizPage() {
 
   /* ════════════════════ QUIZ FORM ════════════════════ */
   return (
-    <main className="relative min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-red-900/20 via-zinc-950 to-zinc-950 text-white">
+    <main className="relative min-h-screen bg-transparent text-[var(--theme-text)]">
       {/* floating emojis layer */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         {floatingEmojis.map((item, i) => (
@@ -404,13 +404,13 @@ export default function QuizPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-16 text-center"
         >
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-red-400">
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-[var(--theme-primary)]/20 bg-[var(--theme-primary)]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[var(--theme-primary)]">
             <Skull className="h-3.5 w-3.5" /> Financial Vibe Check
           </span>
           <h1 className="mt-4 text-4xl font-black leading-tight sm:text-5xl">
-            How <span className="text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">cooked</span> are you? 💀
+            How <span className="text-[var(--theme-primary)] drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">cooked</span> are you? 💀
           </h1>
-          <p className="mt-3 text-zinc-500">
+          <p className="mt-3 text-[var(--theme-text-muted)]">
             Answer honestly. Or don&rsquo;t. We&rsquo;ll judge you either way. 📉
           </p>
         </motion.div>
@@ -421,10 +421,10 @@ export default function QuizPage() {
           animate="show"
           variants={cardVariant}
           custom={0}
-          className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur"
+          className="mb-6 rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-6 backdrop-blur-xl shadow-sm"
         >
-          <label className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-zinc-400">
-            <Skull className="h-4 w-4 text-red-500" />
+          <label className="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">
+            <Skull className="h-4 w-4 text-[var(--theme-primary)]" />
             Your Alias 💀
           </label>
           <input
@@ -432,7 +432,7 @@ export default function QuizPage() {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="e.g. BudgetBandit"
-            className="w-full rounded-xl border-2 border-zinc-800 bg-zinc-950 px-5 py-4 font-mono text-xl text-white placeholder:text-zinc-700 transition focus:border-red-500 focus:outline-none focus:ring-0"
+            className="w-full rounded-xl border-2 border-[var(--theme-border)] bg-[var(--theme-bg)] px-5 py-4 font-mono text-xl text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] transition focus:border-[var(--theme-primary)] focus:outline-none focus:ring-0"
           />
         </motion.div>
 
@@ -443,10 +443,10 @@ export default function QuizPage() {
               key={q.field}
               variants={cardVariant}
               custom={i + 1}
-              className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur"
+              className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-6 backdrop-blur-xl shadow-sm"
             >
-              <label className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-zinc-400">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/10 text-red-500">
+              <label className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[var(--theme-text-muted)]">
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--theme-primary)]/10 text-[var(--theme-primary)]">
                   {q.icon}
                 </span>
                 <span>
@@ -456,7 +456,7 @@ export default function QuizPage() {
 
               {q.kind === "number" ? (
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-black text-zinc-600">
+                  <span className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-2xl font-black text-[var(--theme-text-muted)]">
                     $
                   </span>
                   <input
@@ -466,7 +466,7 @@ export default function QuizPage() {
                     value={answers[q.field]}
                     onChange={(e) => setField(q.field, e.target.value)}
                     placeholder={q.placeholder}
-                    className="w-full rounded-xl border-2 border-zinc-800 bg-zinc-950 py-4 pl-12 pr-5 font-mono text-2xl text-white placeholder:text-zinc-700 transition focus:border-red-500 focus:outline-none focus:ring-0"
+                    className="w-full rounded-xl border-2 border-[var(--theme-border)] bg-[var(--theme-bg)] py-4 pl-12 pr-5 font-mono text-2xl text-[var(--theme-text)] placeholder:text-[var(--theme-text-muted)] transition focus:border-[var(--theme-primary)] focus:outline-none focus:ring-0"
                   />
                 </div>
               ) : (
@@ -480,8 +480,8 @@ export default function QuizPage() {
                         onClick={() => setField(q.field, opt.value)}
                         className={`rounded-xl border-2 px-4 py-3.5 text-sm font-bold transition-all ${
                           selected
-                            ? "border-red-500 bg-red-500/15 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.15)]"
-                            : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                            ? "border-[var(--theme-primary)] bg-[var(--theme-primary)]/15 text-[var(--theme-primary)] shadow-lg"
+                            : "border-[var(--theme-border)] bg-[var(--theme-bg)] text-[var(--theme-text-muted)] hover:opacity-80"
                         }`}
                       >
                         {opt.label}
@@ -501,11 +501,11 @@ export default function QuizPage() {
           transition={{ delay: 1 }}
           className="sticky bottom-6 z-20 mt-12"
         >
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-4 backdrop-blur-xl">
+            <div className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-4 backdrop-blur-xl">
             <button
               type="submit"
               disabled={loading || !userId || !allFilled}
-              className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-red-500 py-5 text-lg font-black text-white shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(239,68,68,0.45)] active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
+              className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-[var(--theme-primary)] py-5 text-lg font-black text-[var(--theme-bg)] shadow-lg transition-all hover:scale-[1.02] hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
             >
               {loading ? (
                 <>
@@ -520,7 +520,7 @@ export default function QuizPage() {
               )}
             </button>
             {!allFilled && (
-              <p className="mt-2 text-center text-xs text-zinc-600">
+              <p className="mt-2 text-center text-xs text-[var(--theme-text-muted)]">
                 Answer all questions to unlock your diagnosis
               </p>
             )}

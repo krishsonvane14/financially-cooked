@@ -85,27 +85,27 @@ const fadeUp = {
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-zinc-950 text-white selection:bg-red-500/30 selection:text-white">
+    <main className="relative min-h-screen overflow-x-hidden bg-transparent text-[var(--theme-text)] selection:bg-[var(--theme-primary)]/30 selection:text-[var(--theme-text)]">
       {/* ─── noise grain overlay ─── */}
       <div className="pointer-events-none fixed inset-0 z-50 opacity-[0.03] mix-blend-overlay bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI2EpIi8+PC9zdmc+')]" />
 
       {/* ─── radial hero glow ─── */}
-      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-[800px] w-[800px] rounded-full bg-red-500/10 blur-[160px]" />
+      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 h-[800px] w-[800px] rounded-full bg-[var(--theme-primary)]/10 blur-[160px]" />
 
       {/* ════════════════════ NAVBAR ════════════════════ */}
-      <nav className="sticky top-0 z-40 w-full border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl">
+      <nav className="sticky top-0 z-40 w-full border-b border-[var(--theme-border)] bg-[var(--theme-bg)]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <Flame className="h-6 w-6 text-red-500" />
+            <Flame className="h-6 w-6 text-[var(--theme-primary)]" />
             <span className="text-lg font-black tracking-tighter">
-              FINANCIALLY <span className="text-red-500">COOKED.</span>
+              FINANCIALLY <span className="text-[var(--theme-primary)]">COOKED.</span>
             </span>
           </Link>
 
           <div className="flex items-center gap-4">
             <SignedOut>
               <SignInButton mode="modal" forceRedirectUrl="/quiz">
-                <button className="rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/10">
+                <button className="rounded-full border border-[var(--theme-border)] bg-[var(--theme-card)] px-5 py-2 text-sm font-bold text-[var(--theme-text)] backdrop-blur transition hover:opacity-80">
                   Log In
                 </button>
               </SignInButton>
@@ -113,7 +113,7 @@ export default function Home() {
             <SignedIn>
               <Link
                 href="/dashboard"
-                className="rounded-full border border-red-500/30 bg-red-500/10 px-5 py-2 text-sm font-bold text-red-400 transition hover:bg-red-500/20"
+                className="rounded-full border border-[var(--theme-primary)]/30 bg-[var(--theme-primary)]/10 px-5 py-2 text-sm font-bold text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)]/20"
               >
                 Dashboard
               </Link>
@@ -153,7 +153,7 @@ export default function Home() {
         >
           {/* pill badge */}
           <motion.div variants={fadeUp} custom={0} className="flex justify-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-red-400">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--theme-primary)]/20 bg-[var(--theme-primary)]/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-[var(--theme-primary)]">
               <Zap className="h-3.5 w-3.5" /> Multiplayer Budgeting
             </span>
           </motion.div>
@@ -165,7 +165,7 @@ export default function Home() {
             className="text-5xl font-black leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl"
           >
             FINANCIALLY{" "}
-            <span className="text-red-500 drop-shadow-[0_0_25px_rgba(239,68,68,0.5)]">
+            <span className="text-[var(--theme-primary)] drop-shadow-[0_0_25px_rgba(239,68,68,0.5)]">
               COOKED.
             </span>
           </motion.h1>
@@ -174,11 +174,11 @@ export default function Home() {
           <motion.p
             variants={fadeUp}
             custom={2}
-            className="mx-auto max-w-2xl text-lg leading-relaxed text-zinc-400 sm:text-xl"
+            className="mx-auto max-w-2xl text-lg leading-relaxed text-[var(--theme-text-muted)] sm:text-xl"
           >
             The only finance app that judges your Uber Eats addiction and lets
             your friends{" "}
-            <span className="font-bold text-red-400">sabotage your budget</span>.
+            <span className="font-bold text-[var(--theme-primary)]">sabotage your budget</span>.
             💀💸 Track spending. Get roasted. Survive.
           </motion.p>
 
@@ -186,31 +186,31 @@ export default function Home() {
           <motion.div variants={fadeUp} custom={3} className="flex flex-col items-center gap-4 pt-4">
             <SignedOut>
               <SignUpButton mode="modal" forceRedirectUrl="/quiz">
-                <button className="group relative inline-flex items-center gap-2 rounded-2xl bg-red-500 px-10 py-5 text-lg font-black text-white shadow-[0_0_40px_rgba(239,68,68,0.35)] transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(239,68,68,0.5)] active:scale-95">
+                <button className="group relative inline-flex items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-10 py-5 text-lg font-black text-[var(--theme-bg)] shadow-lg transition-all hover:scale-105 hover:opacity-90 active:scale-95">
                   <Skull className="h-5 w-5 transition group-hover:rotate-12" />
                   GET DIAGNOSED
                   {/* pulsing ring */}
-                  <span className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-red-500/20" />
+                  <span className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-[var(--theme-primary)]/20" />
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link
                 href="/dashboard"
-                className="group relative inline-flex items-center gap-2 rounded-2xl bg-red-500 px-10 py-5 text-lg font-black text-white shadow-[0_0_40px_rgba(239,68,68,0.35)] transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(239,68,68,0.5)] active:scale-95"
+                className="group relative inline-flex items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-10 py-5 text-lg font-black text-[var(--theme-bg)] shadow-lg transition-all hover:scale-105 hover:opacity-90 active:scale-95"
               >
                 <Flame className="h-5 w-5 transition group-hover:rotate-12" />
                 ENTER THE DASHBOARD
               </Link>
             </SignedIn>
-            <span className="text-xs font-medium text-zinc-600">
+            <span className="text-xs font-medium text-[var(--theme-text-muted)]">
               no credit card needed · just vibes & bad decisions 📉
             </span>
           </motion.div>
         </motion.div>
 
         {/* bottom gradient fade */}
-        <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-zinc-950 to-transparent" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-32 w-full bg-gradient-to-t from-[var(--theme-bg)] to-transparent" />
       </section>
 
       {/* ════════════════════ SECTION 2 — CHOOSE YOUR FIGHTER ════════════════════ */}
@@ -225,7 +225,7 @@ export default function Home() {
             <h2 className="text-4xl font-black sm:text-5xl">
               Choose Your Fighter 🎯
             </h2>
-            <p className="mt-4 text-lg text-zinc-500">
+            <p className="mt-4 text-lg text-[var(--theme-text-muted)]">
               Three personas. Three levels of financial delusion. Pick wisely (or
               don&rsquo;t, we don&rsquo;t care). 💀
             </p>
@@ -236,9 +236,9 @@ export default function Home() {
             <motion.div
               variants={fadeUp}
               custom={1}
-              className="group relative rotate-1 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 backdrop-blur transition-all hover:rotate-0 hover:border-zinc-600 hover:bg-zinc-900"
+              className="group relative rotate-1 rounded-3xl border border-[var(--theme-border)] bg-[var(--theme-card)] p-8 backdrop-blur-xl transition-all hover:rotate-0 hover:border-[var(--theme-primary)]/30"
             >
-              <div className="mb-6 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-800/50">
+              <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-bg)]/50">
                 <img
                   src="/assets/dummy-vanilla.gif"
                   alt="Vanilla theme"
@@ -246,13 +246,13 @@ export default function Home() {
                 />
               </div>
               <h3 className="text-2xl font-black">Vanilla 🥱</h3>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-                Clean. Minimal. <span className="text-zinc-300">Boring.</span>{" "}
+              <p className="mt-3 text-sm leading-relaxed text-[var(--theme-text-muted)]">
+                Clean. Minimal. <span className="text-[var(--theme-text)]">Boring.</span>{" "}
                 For people who colour-code their spreadsheets and pretend they
                 have their life together. You probably own a budgeting journal
                 from Amazon. 📊
               </p>
-              <span className="mt-4 inline-block rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1 text-xs font-bold text-zinc-400">
+              <span className="mt-4 inline-block rounded-full border border-[var(--theme-border)] bg-[var(--theme-card)] px-3 py-1 text-xs font-bold text-[var(--theme-text-muted)]">
                 &quot;I&rsquo;m actually fine&quot;
               </span>
             </motion.div>
@@ -261,9 +261,9 @@ export default function Home() {
             <motion.div
               variants={fadeUp}
               custom={2}
-              className="group relative -rotate-2 rounded-3xl border border-red-500/20 bg-gradient-to-b from-red-500/10 to-zinc-900/80 p-8 backdrop-blur transition-all hover:rotate-0 hover:border-red-500/40 hover:shadow-[0_0_40px_rgba(239,68,68,0.15)]"
+              className="group relative -rotate-2 rounded-3xl border border-[var(--theme-primary)]/20 bg-[var(--theme-card)] p-8 backdrop-blur-xl transition-all hover:rotate-0 hover:border-[var(--theme-primary)]/40 hover:shadow-[0_0_40px_rgba(239,68,68,0.15)]"
             >
-              <div className="mb-6 overflow-hidden rounded-2xl border border-red-500/20 bg-red-950/30">
+              <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--theme-primary)]/20 bg-[var(--theme-primary)]/10">
                 <img
                   src="/assets/dummy-brainrot.gif"
                   alt="Brainrot theme"
@@ -272,17 +272,17 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-black">
                 Brainrot{" "}
-                <span className="text-red-500">🧠💥</span>
+                <span className="text-[var(--theme-primary)]">🧠💥</span>
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-3 text-sm leading-relaxed text-[var(--theme-text-muted)]">
                 Vine booms on every click. Skibidi styling. Your dashboard looks
                 like it was designed during a 3&nbsp;AM Discord call.{" "}
-                <span className="font-bold text-red-400">
+                <span className="font-bold text-[var(--theme-primary)]">
                   Ohio-level financial literacy.
                 </span>{" "}
                 🗿
               </p>
-              <span className="mt-4 inline-block rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-bold text-red-400">
+              <span className="mt-4 inline-block rounded-full border border-[var(--theme-primary)]/30 bg-[var(--theme-primary)]/10 px-3 py-1 text-xs font-bold text-[var(--theme-primary)]">
                 &quot;it&rsquo;s giving bankruptcy&quot;
               </span>
             </motion.div>
@@ -291,9 +291,9 @@ export default function Home() {
             <motion.div
               variants={fadeUp}
               custom={3}
-              className="group relative rotate-1 rounded-3xl border border-pink-500/20 bg-gradient-to-b from-pink-500/10 to-zinc-900/80 p-8 backdrop-blur transition-all hover:rotate-0 hover:border-pink-500/40 hover:shadow-[0_0_40px_rgba(236,72,153,0.15)]"
+              className="group relative rotate-1 rounded-3xl border border-pink-500/20 bg-[var(--theme-card)] p-8 backdrop-blur-xl transition-all hover:rotate-0 hover:border-pink-500/40 hover:shadow-[0_0_40px_rgba(236,72,153,0.15)]"
             >
-              <div className="mb-6 overflow-hidden rounded-2xl border border-pink-500/20 bg-pink-950/30">
+              <div className="mb-6 overflow-hidden rounded-2xl border border-pink-500/20 bg-pink-500/10">
                 <img
                   src="/assets/dummy-girlmath.gif"
                   alt="Girl Math theme"
@@ -304,7 +304,7 @@ export default function Home() {
                 Girl Math{" "}
                 <span className="text-pink-400">💅✨</span>
               </h3>
-              <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-3 text-sm leading-relaxed text-[var(--theme-text-muted)]">
                 Hot pink everything. If you pay in cash it was{" "}
                 <span className="italic text-pink-300">literally free</span>.
                 Returns mean the store owes YOU money. Math is just a suggestion.
@@ -321,7 +321,7 @@ export default function Home() {
       {/* ════════════════════ SECTION 3 — MULTIPLAYER SABOTAGE ════════════════════ */}
       <section className="relative z-10 overflow-hidden px-6 py-28">
         {/* background accent */}
-        <div className="pointer-events-none absolute right-0 top-1/2 h-[600px] w-[600px] -translate-y-1/2 translate-x-1/3 rounded-full bg-red-500/5 blur-[120px]" />
+        <div className="pointer-events-none absolute right-0 top-1/2 h-[600px] w-[600px] -translate-y-1/2 translate-x-1/3 rounded-full bg-[var(--theme-primary)]/5 blur-[120px]" />
 
         <motion.div
           initial="hidden"
@@ -332,23 +332,23 @@ export default function Home() {
           {/* left — copy */}
           <motion.div variants={fadeUp} custom={0} className="space-y-6">
             <div className="flex items-center gap-2">
-              <Swords className="h-6 w-6 text-red-500" />
-              <span className="text-sm font-bold uppercase tracking-widest text-red-400">
+              <Swords className="h-6 w-6 text-[var(--theme-primary)]" />
+              <span className="text-sm font-bold uppercase tracking-widest text-[var(--theme-primary)]">
                 Multiplayer Sabotage
               </span>
             </div>
             <h2 className="text-4xl font-black leading-tight sm:text-5xl">
               Destroy your friends&rsquo;{" "}
-              <span className="text-red-500">budgets</span> in real-time 🎯
+              <span className="text-[var(--theme-primary)]">budgets</span> in real-time 🎯
             </h2>
-            <p className="text-lg leading-relaxed text-zinc-400">
+            <p className="text-lg leading-relaxed text-[var(--theme-text-muted)]">
               See your friends&rsquo; terrible financial decisions the moment
               they happen. Hit them with a{" "}
-              <span className="font-bold text-red-400">Sabotage Attack</span>{" "}
+              <span className="font-bold text-[var(--theme-primary)]">Sabotage Attack</span>{" "}
               and drain their budget before they drain yours. 💸 It&rsquo;s
               personal finance meets PvP combat. No mercy. 💀
             </p>
-            <ul className="space-y-3 text-sm text-zinc-400">
+            <ul className="space-y-3 text-sm text-[var(--theme-text-muted)]">
               {[
                 "Real-time expense feed — watch the carnage unfold 📉",
                 "Sabotage attacks drain opponents' remaining budget 🔥",
@@ -356,7 +356,7 @@ export default function Home() {
                 "Sound effects that make every bad decision louder 🔊",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <Crosshair className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+                  <Crosshair className="mt-0.5 h-4 w-4 shrink-0 text-[var(--theme-primary)]" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -372,13 +372,13 @@ export default function Home() {
               className="pointer-events-none absolute -right-6 -top-6 z-20 w-24 opacity-70 rotate-12"
             />
 
-            <div className="rotate-2 rounded-3xl border border-red-500/20 bg-zinc-900/80 p-6 shadow-2xl backdrop-blur transition hover:rotate-0">
+            <div className="rotate-2 rounded-3xl border border-[var(--theme-primary)]/20 bg-[var(--theme-card)] p-6 shadow-2xl backdrop-blur-xl transition hover:rotate-0">
               <div className="mb-4 flex items-center justify-between">
-                <h4 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-red-400">
+                <h4 className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[var(--theme-primary)]">
                   <TrendingDown className="h-4 w-4" /> Live Feed
                 </h4>
-                <span className="flex items-center gap-1.5 text-xs text-zinc-500">
-                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                <span className="flex items-center gap-1.5 text-xs text-[var(--theme-text-muted)]">
+                  <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-[var(--theme-primary)]" />
                   LIVE
                 </span>
               </div>
@@ -391,27 +391,27 @@ export default function Home() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.4 + i * 0.15 }}
-                    className="group relative flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3 transition hover:border-red-500/20 hover:bg-red-500/5"
+                    className="group relative flex items-center gap-3 rounded-xl border border-[var(--theme-border)] bg-[var(--theme-card)] px-4 py-3 transition hover:border-[var(--theme-primary)]/20 hover:bg-[var(--theme-primary)]/5"
                   >
                     {/* avatar placeholder */}
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-lg">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--theme-bg)] text-lg">
                       {event.emoji}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-sm font-bold text-zinc-200">
+                      <span className="text-sm font-bold text-[var(--theme-text)]">
                         {event.user}
                       </span>{" "}
-                      <span className="text-sm text-zinc-500">{event.text}</span>
+                      <span className="text-sm text-[var(--theme-text-muted)]">{event.text}</span>
                     </div>
                     {/* crosshair on hover */}
-                    <Crosshair className="h-5 w-5 shrink-0 text-red-500/0 transition group-hover:text-red-500" />
+                    <Crosshair className="h-5 w-5 shrink-0 text-transparent transition group-hover:text-[var(--theme-primary)]" />
                   </motion.div>
                 ))}
               </div>
 
               {/* sabotage button mock */}
               <div className="mt-5 flex justify-end">
-                <span className="inline-flex items-center gap-2 rounded-xl bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider text-red-400 ring-1 ring-red-500/20">
+                <span className="inline-flex items-center gap-2 rounded-xl bg-[var(--theme-primary)]/10 px-4 py-2 text-xs font-black uppercase tracking-wider text-[var(--theme-primary)] ring-1 ring-[var(--theme-primary)]/20">
                   <Crosshair className="h-3.5 w-3.5" /> Sabotage
                 </span>
               </div>
@@ -423,7 +423,7 @@ export default function Home() {
       {/* ════════════════════ SECTION 4 — BOTTOM CTA ════════════════════ */}
       <section className="relative z-10 px-6 py-28">
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-[400px] w-[400px] rounded-full bg-red-500/10 blur-[140px]" />
+          <div className="h-[400px] w-[400px] rounded-full bg-[var(--theme-primary)]/10 blur-[140px]" />
         </div>
         <motion.div
           initial="hidden"
@@ -432,26 +432,26 @@ export default function Home() {
           className="relative mx-auto max-w-3xl text-center"
         >
           <motion.h2 variants={fadeUp} custom={0} className="text-4xl font-black sm:text-5xl">
-            Ready to get <span className="text-red-500">cooked</span>? 🍳
+            Ready to get <span className="text-[var(--theme-primary)]">cooked</span>? 🍳
           </motion.h2>
-          <motion.p variants={fadeUp} custom={1} className="mt-4 text-lg text-zinc-500">
+          <motion.p variants={fadeUp} custom={1} className="mt-4 text-lg text-[var(--theme-text-muted)]">
             Join the chaos. Take the quiz. Find out what kind of financial disaster you are.<br />
             Your wallet will never forgive you.
           </motion.p>
           <motion.div variants={fadeUp} custom={2} className="mt-8 flex justify-center">
             <SignedOut>
               <SignUpButton mode="modal" forceRedirectUrl="/quiz">
-                <button className="group relative inline-flex items-center gap-2 rounded-2xl bg-red-500 px-10 py-5 text-lg font-black text-white shadow-[0_0_40px_rgba(239,68,68,0.35)] transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(239,68,68,0.5)] active:scale-95">
+                <button className="group relative inline-flex items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-10 py-5 text-lg font-black text-[var(--theme-bg)] shadow-lg transition-all hover:scale-105 hover:opacity-90 active:scale-95">
                   <Skull className="h-5 w-5 transition group-hover:rotate-12" />
                   GET DIAGNOSED 💀
-                  <span className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-red-500/20" />
+                  <span className="absolute inset-0 -z-10 animate-ping rounded-2xl bg-[var(--theme-primary)]/20" />
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link
                 href="/dashboard"
-                className="group inline-flex items-center gap-2 rounded-2xl bg-red-500 px-10 py-5 text-lg font-black text-white shadow-[0_0_40px_rgba(239,68,68,0.35)] transition-all hover:scale-105 hover:shadow-[0_0_60px_rgba(239,68,68,0.5)] active:scale-95"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-10 py-5 text-lg font-black text-[var(--theme-bg)] shadow-lg transition-all hover:scale-105 hover:opacity-90 active:scale-95"
               >
                 <Flame className="h-5 w-5 transition group-hover:rotate-12" />
                 ENTER THE DASHBOARD
@@ -462,7 +462,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════════ FOOTER ════════════════════ */}
-      <footer className="border-t border-white/5 py-10 text-center text-xs text-zinc-600">
+      <footer className="border-t border-[var(--theme-border)] py-10 text-center text-xs text-[var(--theme-text-muted)]">
         <p>
           © 2025 Financially Cooked · Built at a hackathon with zero sleep and
           questionable decisions 🍔📉

@@ -15,10 +15,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>("vanilla");
 
-  // This automatically applies a class to the <body> tag whenever the theme changes.
-  // This is how we will trigger global CSS changes and animations later.
+  // Apply the raw theme name as a class on <body> so CSS variables kick in.
+  // Preserves any other classes (e.g. dark mode, antialiased).
   useEffect(() => {
-    document.body.className = `theme-${theme} transition-colors duration-500`;
+    const body = document.body;
+    body.classList.remove("vanilla", "brainrot", "girlmath");
+    body.classList.add(theme);
   }, [theme]);
 
   return (

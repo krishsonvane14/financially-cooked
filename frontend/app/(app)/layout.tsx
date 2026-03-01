@@ -20,6 +20,7 @@ import { useDarkMode } from "@/src/context/DarkModeContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import AmbientBackground from "@/components/AmbientBackground";
+import IdleVideoPlayer from "@/components/IdleVideoPlayer";
 
 /* ── Nav items ─────────────────────────────── */
 const NAV_ITEMS = [
@@ -44,23 +45,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="relative flex h-screen overflow-hidden text-zinc-900 dark:text-zinc-100">
+    <div className="relative flex h-screen overflow-hidden text-[var(--theme-text)]">
       <AmbientBackground />
+      <IdleVideoPlayer />
 
       {/* ── Sidebar (nav only) ── */}
       <aside
         className={cn(
           "sticky top-0 z-30 flex h-screen flex-col justify-between border-r transition-all duration-300",
-          "bg-white/60 border-zinc-200 dark:bg-zinc-950/80 dark:border-zinc-800 backdrop-blur-xl",
+          "bg-[var(--theme-sidebar)] border-[var(--theme-border)] backdrop-blur-xl",
           collapsed ? "w-17" : "w-56",
         )}
       >
         <div className="flex flex-col">
           {/* Logo + collapse toggle */}
-          <div className="flex h-14 items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex h-14 items-center justify-between px-4 border-b border-[var(--theme-border)]">
             {!collapsed && (
               <Link href="/dashboard" className="select-none truncate text-sm font-black tracking-tight">
-                FINANCIALLY <span className="text-red-500">COOKED.</span>
+                FINANCIALLY <span className="text-[var(--theme-primary)]">COOKED.</span>
               </Link>
             )}
             <button
@@ -97,7 +99,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom: dark mode toggle */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="border-t border-[var(--theme-border)] p-3">
           <button
             onClick={toggleDark}
             className={cn(
@@ -116,7 +118,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── Main column ── */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* ── Top header bar ── */}
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-6">
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between border-b border-[var(--theme-border)] bg-[var(--theme-sidebar)] backdrop-blur-xl px-6">
           {/* Left: page title */}
           <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
             {NAV_ITEMS.find((n) => pathname.startsWith(n.href))?.label ?? ""}
@@ -125,7 +127,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Right: theme selector + user */}
           <div className="flex items-center gap-4">
             {/* Theme pill toggle */}
-            <div className="flex items-center gap-0.5 rounded-full border border-zinc-200 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/80 p-1 backdrop-blur">
+            <div className="flex items-center gap-0.5 rounded-full border border-[var(--theme-border)] bg-zinc-100/80 dark:bg-zinc-900/80 p-1 backdrop-blur">
               {THEME_OPTIONS.map((opt) => (
                 <button
                   key={opt.key}
@@ -149,7 +151,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* User name + avatar */}
             <div className="flex items-center gap-3">
-              <span className="hidden text-sm font-semibold text-zinc-700 dark:text-zinc-300 sm:inline">
+              <span className="hidden text-sm font-semibold text-[var(--theme-text-muted)] sm:inline">
                 {user?.fullName || "Spender"}
               </span>
               <UserButton afterSignOutUrl="/" />
