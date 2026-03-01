@@ -9,6 +9,7 @@ export default function QuizPage() {
   const { theme, setTheme } = useTheme();
   const { userId } = useAuth(); // Grabbing the Clerk User ID for Krish's DB
   const router = useRouter();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
   
   // Matching Krish's exact API contract
   const [answers, setAnswers] = useState({ 
@@ -16,6 +17,7 @@ export default function QuizPage() {
     impulse_buy_score: 1, 
     entertainment_spend: 10 
   });
+  const [username, setUsername] = useState("");
   
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -33,6 +35,7 @@ export default function QuizPage() {
       // 1. The Exact Payload Krish Requested
       const payload = {
         user_id: userId,
+        username: username.trim() || undefined,
         takeout_frequency: answers.takeout_frequency,
         impulse_buy_score: answers.impulse_buy_score,
         entertainment_spend: answers.entertainment_spend,
@@ -41,7 +44,7 @@ export default function QuizPage() {
 
       console.log("🚀 SENDING TO BACKEND:", payload);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quiz`, {
+      const res = await fetch(`${apiBaseUrl}/api/quiz`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -83,6 +86,17 @@ export default function QuizPage() {
         
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block mb-2 font-bold">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. BudgetBandit"
+                className="w-full rounded-md border border-gray-300 bg-white/80 px-3 py-2 text-black placeholder:text-gray-500"
+              />
+            </div>
+
             <div>
               <label className="block mb-2 font-bold">1. Takeout Frequency (Meals/Week)</label>
               <input type="range" min="0" max="14" value={answers.takeout_frequency} onChange={(e) => handleChange('takeout_frequency', parseInt(e.target.value))} className="w-full" />
