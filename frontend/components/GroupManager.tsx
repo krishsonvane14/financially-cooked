@@ -119,27 +119,27 @@ export default function GroupManager({ userId, onGroupCreated }: GroupManagerPro
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="flex items-center gap-2 mb-1">
-        <Users className="h-4 w-4 text-zinc-500" />
-        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
+        <Users className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+        <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Create Group
         </h3>
       </div>
 
       {/* Group name */}
       <div className="space-y-1.5">
-        <Label htmlFor="grp-name" className="text-xs text-zinc-500">Group Name</Label>
+        <Label htmlFor="grp-name" className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Group Name</Label>
         <Input
           id="grp-name"
           placeholder="e.g. Roommates"
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
-          className="bg-zinc-900/60 border-zinc-800 text-zinc-100 placeholder:text-zinc-700 focus:border-zinc-600 focus:ring-zinc-700/40"
+          className="w-full bg-white/50 dark:bg-zinc-950/50 border-2 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-red-500 focus:ring-red-500/20"
         />
       </div>
 
       {/* Multi-select members */}
       <div className="space-y-1.5">
-        <Label className="text-xs text-zinc-500">Add Members</Label>
+        <Label className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Add Members</Label>
 
         {/* Selected chips */}
         {selected.length > 0 && (
@@ -147,7 +147,7 @@ export default function GroupManager({ userId, onGroupCreated }: GroupManagerPro
             {selected.map((id) => (
               <span
                 key={id}
-                className="inline-flex items-center gap-1 rounded-full bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300"
+                className="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300"
               >
                 {displayName(id)}
                 <button type="button" onClick={() => toggleUser(id)} className="hover:text-red-400 transition-colors">
@@ -166,20 +166,20 @@ export default function GroupManager({ userId, onGroupCreated }: GroupManagerPro
             onChange={(e) => setSearch(e.target.value)}
             onFocus={() => setDropdownOpen(true)}
             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
-            className="bg-zinc-900/60 border-zinc-800 text-zinc-100 placeholder:text-zinc-700 focus:border-zinc-600 focus:ring-zinc-700/40"
+            className="w-full bg-white/50 dark:bg-zinc-950/50 border-2 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:border-red-500 focus:ring-red-500/20"
           />
 
           {dropdownOpen && filtered.length > 0 && (
-            <div className="absolute z-50 mt-1 w-full max-h-44 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-900 shadow-xl">
+            <div className="absolute z-50 mt-1 w-full max-h-44 overflow-y-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xl">
               {filtered.map((p) => (
                 <button
                   key={p.id}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => { toggleUser(p.id); setSearch(""); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
                 >
-                  <Plus className="h-3.5 w-3.5 text-zinc-500" />
+                  <Plus className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                   {p.username || p.id.slice(0, 12) + "…"}
                 </button>
               ))}
@@ -187,7 +187,7 @@ export default function GroupManager({ userId, onGroupCreated }: GroupManagerPro
           )}
 
           {dropdownOpen && filtered.length === 0 && search && (
-            <div className="absolute z-50 mt-1 w-full rounded-lg border border-zinc-800 bg-zinc-900 p-3 text-xs text-zinc-500 text-center">
+            <div className="absolute z-50 mt-1 w-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 text-xs text-zinc-500 text-center">
               No users found
             </div>
           )}
@@ -197,7 +197,7 @@ export default function GroupManager({ userId, onGroupCreated }: GroupManagerPro
       <Button
         type="submit"
         disabled={!groupName.trim() || selected.length === 0 || submitting}
-        className="w-full bg-zinc-100 text-zinc-900 font-bold hover:bg-white disabled:bg-zinc-800 disabled:text-zinc-600 transition-all"
+        className="w-full bg-red-500 hover:bg-red-600 text-white font-black rounded-xl shadow-lg shadow-red-500/25 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:shadow-none transition-all"
       >
         {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create Group"}
       </Button>

@@ -19,6 +19,7 @@ import { useTheme, Theme } from "@/src/context/ThemeContext";
 import { useDarkMode } from "@/src/context/DarkModeContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import AmbientBackground from "@/components/AmbientBackground";
 
 /* ── Nav items ─────────────────────────────── */
 const NAV_ITEMS = [
@@ -43,7 +44,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-zinc-50 text-zinc-900 dark:bg-[#09090b] dark:text-zinc-100">
+    <div className="relative flex h-screen overflow-hidden text-zinc-900 dark:text-zinc-100">
+      <AmbientBackground />
+
       {/* ── Sidebar (nav only) ── */}
       <aside
         className={cn(

@@ -166,12 +166,6 @@ export default function LeaderboardPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      {/* Top bar */}
-      <header className="sticky top-0 z-20 flex h-14 items-center border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-6">
-        <Trophy className="mr-2 h-4 w-4 text-amber-500" />
-        <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Leaderboard</h2>
-      </header>
-
       <div className="mx-auto max-w-4xl px-6 py-8 space-y-8">
         {/* ── Top 5 Highest Spenders Today ─────────────────────────────── */}
         <section>
@@ -179,8 +173,8 @@ export default function LeaderboardPage() {
             <div className="rounded-full bg-red-500/10 p-4">
               <Flame className="h-8 w-8 text-red-500" />
             </div>
-            <h1 className="text-2xl font-black">Today&apos;s Biggest Burners</h1>
-            <p className="max-w-md text-sm text-zinc-500">
+            <h1 className="text-2xl font-black text-zinc-900 dark:text-zinc-100">Today&apos;s Biggest Burners</h1>
+            <p className="max-w-md text-sm text-zinc-500 dark:text-zinc-400">
               Top 5 highest spenders <span className="font-bold">today</span>. If you see your name here, you&apos;re getting cooked in real time.
             </p>
           </div>
@@ -200,14 +194,14 @@ export default function LeaderboardPage() {
                 return (
                   <div
                     key={s.user_id}
-                    className={`relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-shadow hover:shadow-md ${
+                    className={`relative flex flex-col items-center gap-2 rounded-2xl border p-4 text-center backdrop-blur-xl transition-all hover:shadow-md hover:-translate-y-0.5 ${
                       idx === 0
-                        ? "border-red-500/40 bg-red-500/5 dark:bg-red-500/10 shadow-sm"
-                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                        ? "border-red-500/40 bg-red-500/5 dark:bg-red-500/10 shadow-sm shadow-red-500/10"
+                        : "border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40"
                     }`}
                   >
                     <span className="text-3xl">{AVATARS[idx] ?? "💸"}</span>
-                    <p className="text-xs font-bold truncate max-w-full">
+                    <p className="text-xs font-bold truncate max-w-full text-zinc-800 dark:text-zinc-200">
                       {s.username || s.persona || "Anonymous"}
                       {isYou && <span className="ml-1 text-blue-500">(YOU)</span>}
                     </p>
@@ -226,8 +220,8 @@ export default function LeaderboardPage() {
             <div className="rounded-full bg-amber-500/10 p-4">
               <Trophy className="h-8 w-8 text-amber-500" />
             </div>
-            <h2 className="text-xl font-black">Wall of Shame</h2>
-            <p className="max-w-md text-sm text-zinc-500">
+            <h2 className="text-xl font-black text-zinc-900 dark:text-zinc-100">Wall of Shame</h2>
+            <p className="max-w-md text-sm text-zinc-500 dark:text-zinc-400">
               Ranked by budget — lowest on top. If you see red, they&apos;re <span className="font-bold text-red-500">cooked</span>.
             </p>
           </div>
@@ -244,7 +238,7 @@ export default function LeaderboardPage() {
               <p className="text-sm font-medium">No players yet. Be the first to get judged.</p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl shadow-sm divide-y divide-zinc-200 dark:divide-zinc-800">
               <Table>
                 <TableHeader>
                   <TableRow className="border-zinc-200 dark:border-zinc-800">
@@ -259,21 +253,28 @@ export default function LeaderboardPage() {
                     const isCooked = r.monthly_limit < 50;
                     const isYou = r.id === userId;
                     const isLowest = r.id === lowestId;
+
+                    // Top-3 row accent: gold / silver / bronze
+                    let rowAccent = "";
+                    if (idx === 0) rowAccent = "bg-amber-50/60 dark:bg-amber-500/5";
+                    else if (idx === 1) rowAccent = "bg-zinc-50/60 dark:bg-zinc-500/5";
+                    else if (idx === 2) rowAccent = "bg-orange-50/60 dark:bg-orange-500/5";
+
                     return (
                       <TableRow
                         key={r.id}
-                        className={
+                        className={`transition-colors ${
                           isCooked
                             ? "animate-pulse bg-red-500/5 hover:bg-red-500/10 dark:bg-red-500/10"
                             : isYou
                               ? "bg-blue-500/5 dark:bg-blue-500/10"
-                              : ""
-                        }
+                              : rowAccent || "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                        }`}
                       >
                         <TableCell className="text-center">{rankBadge(idx)}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-semibold">
+                            <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                               {r.username || r.persona}
                               {isLowest && " 🔥"}
                               {isYou && (
@@ -285,7 +286,7 @@ export default function LeaderboardPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right tabular-nums font-medium">
+                        <TableCell className="text-right tabular-nums font-medium text-zinc-700 dark:text-zinc-300">
                           {USD.format(r.monthly_limit)}
                         </TableCell>
                         <TableCell className="text-center">

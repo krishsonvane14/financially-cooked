@@ -45,8 +45,8 @@ export default function GroupsPage() {
       <div className="mx-auto max-w-5xl space-y-6 p-6 md:p-10">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-black tracking-tight">Groups</h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Groups</h1>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             Create squads, split expenses, and get everyone financially cooked together.
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function GroupsPage() {
         {/* Two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left — Create group */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-6 shadow-sm">
             <GroupManager
               userId={userId}
               onGroupCreated={(newGroup) => {
@@ -64,7 +64,7 @@ export default function GroupsPage() {
           </div>
 
           {/* Right — Split expense */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-6 shadow-sm">
             <SplitExpenseForm
               userId={userId}
               groups={groups}
@@ -75,34 +75,34 @@ export default function GroupsPage() {
 
         {/* Existing groups list */}
         <section className="space-y-3">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-zinc-400">Your Groups</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Your Groups</h2>
 
           {loading ? (
             <div className="flex items-center gap-2 text-zinc-500 text-sm">
               <Loader2 className="h-4 w-4 animate-spin" /> Loading groups…
             </div>
           ) : groups.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-800 p-8 text-center">
-              <Users className="mx-auto h-8 w-8 text-zinc-600 mb-2" />
-              <p className="text-sm text-zinc-500">No groups yet. Create one above to get started.</p>
+            <div className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-white/40 dark:bg-zinc-900/20 backdrop-blur-xl p-8 text-center">
+              <Users className="mx-auto h-8 w-8 text-zinc-400 dark:text-zinc-600 mb-2" />
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">No groups yet. Create one above to get started.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {groups.map((g) => (
                 <div
                   key={g.id}
-                  className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm space-y-4"
+                  className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm space-y-4 transition-shadow hover:shadow-md"
                 >
                   <div>
-                    <h3 className="font-bold text-zinc-100 truncate">{g.name}</h3>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <h3 className="font-bold text-zinc-900 dark:text-zinc-100 truncate">{g.name}</h3>
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                       {g.members.length} member{g.members.length !== 1 ? "s" : ""}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1">
                       {g.members.map((mid) => (
                         <span
                           key={mid}
-                          className="inline-block rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-400"
+                          className="inline-block rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-400"
                         >
                           {mid === userId ? "You" : mid.slice(0, 8) + "…"}
                         </span>

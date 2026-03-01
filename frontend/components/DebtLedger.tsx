@@ -94,8 +94,8 @@ export default function DebtLedger({ groupId, currentUserId }: DebtLedgerProps) 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <Receipt className="h-4 w-4 text-zinc-500" />
-        <h4 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
+        <Receipt className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+        <h4 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Debt Ledger
         </h4>
       </div>
@@ -110,14 +110,14 @@ export default function DebtLedger({ groupId, currentUserId }: DebtLedgerProps) 
           return (
             <div
               key={b.user_id}
-              className="flex items-center justify-between rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 px-4 py-3 shadow-sm"
+              className="flex items-center justify-between rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl px-4 py-3 shadow-sm transition-shadow hover:shadow-md"
             >
               {/* Left side — name + label */}
               <div className="flex flex-col gap-0.5 min-w-0">
-                <span className="text-sm font-bold text-zinc-100 truncate">
+                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                   {isYou ? "You" : b.username}
                 </span>
-                <span className="text-[11px] text-zinc-500">
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
                   {even
                     ? "Settled up"
                     : owes
@@ -146,7 +146,7 @@ export default function DebtLedger({ groupId, currentUserId }: DebtLedgerProps) 
                     variant="outline"
                     disabled={settlingId === b.user_id}
                     onClick={() => handleSettle(b)}
-                    className="h-7 gap-1.5 rounded-lg border-zinc-700 bg-zinc-800 text-[11px] font-bold text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 disabled:opacity-50"
+                    className="h-7 gap-1.5 rounded-lg border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-[11px] font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100 disabled:opacity-50"
                   >
                     {settlingId === b.user_id ? (
                       <Loader2 className="h-3 w-3 animate-spin" />

@@ -364,7 +364,7 @@ export default function DashboardPage() {
         {profileLoading ? (
           <Skeleton className="h-44 w-full rounded-2xl" />
         ) : (
-          <section className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-8 shadow-sm">
+          <section className="relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-8 shadow-sm dark:shadow-[inset_0_0_80px_rgba(239,68,68,0.05)]">
             {/* subtle accent glow */}
             <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-red-500/5 blur-[80px]" />
             <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -407,7 +407,7 @@ export default function DashboardPage() {
             {metrics.map((m) => (
               <div
                 key={m.label}
-                className="group relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 shadow-sm transition-shadow hover:shadow-md"
+                className="group relative overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex items-start justify-between">
                   <div className="min-w-0">
@@ -426,7 +426,7 @@ export default function DashboardPage() {
 
         {/* ── Cooked Progression Meter ── */}
         {!profileLoading && monthlyLimit > 0 && (
-          <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 shadow-sm">
+          <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm">
             <CookedMeter pct={spentPct} />
           </section>
         )}
@@ -435,7 +435,7 @@ export default function DashboardPage() {
         {!expensesLoading && expenses.length > 0 && (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Spending over time */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 shadow-sm">
+            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm">
               <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Spending Over Time</p>
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={lineChartData}>
@@ -457,7 +457,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Expenses by category */}
-            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-5 shadow-sm">
+            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-5 shadow-sm">
               <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Expenses by Category</p>
               <div className="flex items-center gap-4">
                 <ResponsiveContainer width="50%" height={220}>
@@ -488,7 +488,7 @@ export default function DashboardPage() {
         )}
 
         {/* ── Expense Form (full-width) ── */}
-        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-6 shadow-sm">
+        <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl p-6 shadow-sm">
           <ExpenseForm userId={userId ?? null} onSubmit={() => fetchExpenses()} />
         </section>
 

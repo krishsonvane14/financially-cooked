@@ -95,19 +95,19 @@ export default function ExpenseForm({ userId, onSubmit }: ExpenseFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="flex items-center gap-2 mb-1">
-        <Plus className="h-4 w-4 text-zinc-500" />
-        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400">
+        <Plus className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+        <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Log Expense
         </h3>
       </div>
 
       {/* Amount */}
       <div className="space-y-1.5">
-        <Label htmlFor="exp-amount" className="text-xs text-zinc-500">
+        <Label htmlFor="exp-amount" className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Amount
         </Label>
         <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
           <Input
             id="exp-amount"
             type="number"
@@ -116,8 +116,10 @@ export default function ExpenseForm({ userId, onSubmit }: ExpenseFormProps) {
             placeholder="0.00"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="pl-9 bg-zinc-900/60 border-zinc-800 text-zinc-100 font-mono text-lg
-                       placeholder:text-zinc-700 focus:border-zinc-600 focus:ring-zinc-700/40
+            className="pl-9 w-full bg-white/50 dark:bg-zinc-950/50 border-2 border-zinc-200 dark:border-zinc-800
+                       text-zinc-900 dark:text-zinc-100 font-mono text-lg rounded-xl
+                       placeholder:text-zinc-400 dark:placeholder:text-zinc-600
+                       focus:border-red-500 focus:ring-red-500/20
                        [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none
                        [&::-webkit-outer-spin-button]:appearance-none"
           />
@@ -126,22 +128,22 @@ export default function ExpenseForm({ userId, onSubmit }: ExpenseFormProps) {
 
       {/* Category */}
       <div className="space-y-1.5">
-        <Label htmlFor="exp-cat" className="text-xs text-zinc-500">
+        <Label htmlFor="exp-cat" className="text-sm font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Category
         </Label>
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger
             id="exp-cat"
-            className="bg-zinc-900/60 border-zinc-800 text-zinc-300 focus:border-zinc-600 focus:ring-zinc-700/40"
+            className="w-full bg-white/50 dark:bg-zinc-950/50 border-2 border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-300 rounded-xl focus:border-red-500 focus:ring-red-500/20"
           >
             <SelectValue placeholder="Pick a category" />
           </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-zinc-800">
+          <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-xl">
             {CATEGORIES.map((c) => (
               <SelectItem
                 key={c.value}
                 value={c.value}
-                className="text-zinc-200 focus:bg-zinc-800 focus:text-zinc-100"
+                className="text-zinc-700 dark:text-zinc-200 focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:text-zinc-900 dark:focus:text-zinc-100"
               >
                 <span className="flex items-center gap-2">
                   <span>{c.icon}</span>
@@ -161,7 +163,7 @@ export default function ExpenseForm({ userId, onSubmit }: ExpenseFormProps) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="flex items-center justify-center gap-2 py-3 rounded-lg bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-sm font-bold"
+            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 text-sm font-bold"
           >
             <Check className="h-4 w-4" /> Logged!
           </motion.div>
@@ -170,8 +172,8 @@ export default function ExpenseForm({ userId, onSubmit }: ExpenseFormProps) {
             <Button
               type="submit"
               disabled={!isValid || submitting || !userId}
-              className="w-full bg-zinc-100 text-zinc-900 font-bold hover:bg-white
-                         disabled:bg-zinc-800 disabled:text-zinc-600 transition-all"
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-black rounded-xl shadow-lg shadow-red-500/25
+                         disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:shadow-none transition-all"
             >
               {submitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
