@@ -32,10 +32,11 @@ app.add_middleware(
 # 3. Pydantic Models (Input Validation)
 class QuizAnswers(BaseModel):
     user_id: str
+    username: str  
     takeout_frequency: int
     impulse_buy_score: int
     entertainment_spend: int
-    selected_theme: str  # The frontend will send "vanilla", "brainrot", or "pink"
+    selected_theme: str
 
 
 class PersonaGenerator:
@@ -177,6 +178,7 @@ def handle_quiz_submission(payload: QuizAnswers):
     try:
         supabase.table("profiles").upsert({
             "id": payload.user_id,
+            "username": payload.username, 
             "persona": generated["persona"],
             "theme_preference": generated["theme"],
             "monthly_limit": generated["limit"],
@@ -196,7 +198,7 @@ def handle_quiz_submission(payload: QuizAnswers):
 @app.get("/api/leaderboard")
 def get_leaderboard():
     try:
-        response = supabase.table("profiles").select("id, persona, monthly_limit").order("monthly_limit", desc=False).execute()
+        response = supabase.table("profiles").select("id, username, persona, monthly_limit").order("monthly_limit", desc=False).execute()
         return {"rankings": response.data}
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Database failure: {exc}") 
+        raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
