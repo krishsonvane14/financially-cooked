@@ -30,32 +30,43 @@ export default function QuizPage() {
     setLoading(true);
 
     try {
-      // Calling Krish's live Render backend
+      // 1. The Exact Payload Krish Requested
+      const payload = {
+        user_id: userId,
+        takeout_frequency: answers.takeout_frequency,
+        impulse_buy_score: answers.impulse_buy_score,
+        entertainment_spend: answers.entertainment_spend,
+        selected_theme: theme,
+      };
+
+      console.log("🚀 SENDING TO BACKEND:", payload);
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quiz`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          ...answers,
-          selected_theme: theme, // Sending the current theme so his AI can override it
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      setResult(data);
+      console.log("📥 RECEIVED FROM BACKEND:", data);
 
-      // The AI Hijack: Forcing the theme change based on his response
+      // 2. Catch the Silent Failures
+      if (!res.ok) {
+        console.error("❌ BACKEND REJECTED IT. Status:", res.status);
+        alert(`API Error! Check the browser console. \nServer says: ${JSON.stringify(data.detail || data)}`);
+        setLoading(false);
+        return; // Stop here so we don't render the $0.00 screen
+      }
+
+      // 3. Success Path
+      setResult(data);
       if (data.recommended_theme) {
         setTheme(data.recommended_theme);
       }
 
-      // Navigate to the dashboard now that persona + theme are locked in
-      router.push("/dashboard");
     } catch (error) {
-      console.error("Failed to reach the Brain:", error);
-      alert("Krish's backend might be asleep on Render. Give it a second!");
+      console.error("🔥 NETWORK CRASH:", error);
+      alert("Failed to reach the server entirely. Is the Render URL correct?");
     } finally {
       setLoading(false);
     }
@@ -102,7 +113,13 @@ export default function QuizPage() {
               <p className="text-4xl font-black">${result.monthly_limit?.toFixed(2) || "0.00"}</p>
             </div>
             <p className="italic text-sm">Theme forced to: {result.recommended_theme}</p>
-            <button onClick={() => window.location.reload()} className="mt-4 underline text-sm">Retake Quiz</button>
+            <button
+              onClick={() => router.push("/dashboard")}
+              className="w-full py-3 bg-red-500 text-white font-black text-lg rounded-lg hover:bg-red-600 transition shadow-lg shadow-red-500/30"
+            >
+              GO TO DASHBOARD →
+            </button>
+            <button onClick={() => window.location.reload()} className="mt-2 underline text-sm opacity-60 hover:opacity-100 transition-opacity">Retake Quiz</button>
           </div>
         )}
       </div>
