@@ -1,17 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import {
   DollarSign,
+  Flame,
   Loader2,
   Skull,
   TrendingDown,
   User,
   Volume2,
   VolumeX,
+  Wallet,
   Zap,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+} from "recharts";
 import ExpenseForm from "@/components/ExpenseForm";
 import SabotageAttackModal, { Player } from "@/components/SabotageAttackModal";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +48,14 @@ type LeaderboardEntry = {
   monthly_limit: number;
 };
 
+interface Expense {
+  id?: string;
+  amount: number;
+  category?: string;
+  description?: string;
+  created_at?: string;
+}
+
 /* ── Theme visual tokens ────────────────────────────────────────────────── */
 
 const THEME_VIZ: Record<Theme, { sfx?: string }> = {
@@ -45,7 +66,69 @@ const THEME_VIZ: Record<Theme, { sfx?: string }> = {
 
 const USD = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const isTheme = (v: string): v is Theme => v === "vanilla" || v === "brainrot" || v === "girlmath";
-const apiBase = process.env.NEXT_PUBLIC_API_URL;
+const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+const CATEGORY_COLORS: Record<string, string> = {
+  food: "#f59e0b",
+  entertainment: "#8b5cf6",
+  shopping: "#ec4899",
+  transport: "#06b6d4",
+  subscriptions: "#10b981",
+  other: "#6b7280",
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  food: "Food",
+  entertainment: "Entertainment",
+  shopping: "Shopping",
+  transport: "Transport",
+  subscriptions: "Subscriptions",
+  other: "Other",
+};
+
+/* ── Cooked Meter ───────────────────────────────────────────────────────── */
+
+function CookedMeter({ pct }: { pct: number }) {
+  const clamped = Math.min(pct, 120);
+
+  let barColor = "bg-emerald-500";
+  let glowColor = "";
+  let shake = "";
+  let label = "On Track";
+
+  if (clamped >= 100) {
+    barColor = "bg-red-600";
+    glowColor = "shadow-[0_0_20px_rgba(239,68,68,0.6)]";
+    shake = "animate-[screen-shake_0.12s_ease-in-out_infinite]";
+    label = "🔥 COOKED 🔥";
+  } else if (clamped >= 85) {
+    barColor = "bg-red-500";
+    glowColor = "shadow-[0_0_12px_rgba(239,68,68,0.4)]";
+    shake = "animate-[screen-shake_0.25s_ease-in-out_infinite]";
+    label = "DANGER";
+  } else if (clamped >= 50) {
+    barColor = "bg-yellow-500";
+    shake = "animate-pulse";
+    label = "Warning";
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-xs font-bold">
+        <span className="uppercase tracking-widest text-zinc-400">Spending Progress</span>
+        <span className={clamped >= 85 ? "text-red-500" : clamped >= 50 ? "text-yellow-500" : "text-emerald-500"}>
+          {Math.round(clamped)}% — {label}
+        </span>
+      </div>
+      <div className={`h-4 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800 ${shake}`}>
+        <div
+          className={`h-full rounded-full transition-all duration-700 ease-out ${barColor} ${glowColor}`}
+          style={{ width: `${Math.min(clamped, 100)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
 
 /* ── Component ──────────────────────────────────────────────────────────── */
 
@@ -56,12 +139,15 @@ export default function DashboardPage() {
 
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expensesLoading, setExpensesLoading] = useState(true);
   const [players, setPlayers] = useState<Player[]>([]);
   const [playersLoading, setPlayersLoading] = useState(true);
   const [sfxEnabled, setSfxEnabled] = useState(false);
   const [isUnderAttack, setIsUnderAttack] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const attackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heartbeatRef = useRef<HTMLAudioElement | null>(null);
 
   /* ── Fetch profile ──────────────────────────────────────────────────── */
 
@@ -84,7 +170,42 @@ export default function DashboardPage() {
     })();
   }, [setTheme, userId]);
 
-  /* ── Realtime profile subscription ───────────────────────────────── */
+  /* ── Fetch expenses ─────────────────────────────────────────────────── */
+
+  const fetchExpenses = useCallback(async () => {
+    if (!userId) { setExpensesLoading(false); return; }
+    try {
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("id, amount, category, description, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) { console.error("Expense fetch:", error); setExpenses([]); return; }
+      setExpenses((data as Expense[]) ?? []);
+    } catch (e) { console.error("Expense fetch error:", e); setExpenses([]); }
+    finally { setExpensesLoading(false); }
+  }, [userId]);
+
+  useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
+
+  /* ── Realtime expense subscription ──────────────────────────────────── */
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`expenses-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "expenses", filter: `user_id=eq.${userId}` },
+        () => { fetchExpenses(); },
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, fetchExpenses]);
+
+  /* ── Realtime profile subscription (sabotage detection) ─────────────── */
 
   useEffect(() => {
     if (!userId) return;
@@ -93,25 +214,18 @@ export default function DashboardPage() {
       .channel(`profile-${userId}`)
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${userId}`,
-        },
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${userId}` },
         (payload) => {
           const row = payload.new as Record<string, unknown>;
           const newLimit = (row.monthly_limit as number) ?? 0;
 
           setProfile((prev) => {
-            // Detect budget decrease → retaliation effect
             if (prev && newLimit < prev.monthly_limit) {
-              // Play vine boom
+              // SABOTAGE DETECTED — retaliation effect
               const boom = new Audio("/assets/sound-effects/vine-boom.mp3");
               boom.volume = 0.6;
               boom.play().catch(() => {});
 
-              // Trigger screen shake for 3 seconds
               setIsUnderAttack(true);
               if (attackTimerRef.current) clearTimeout(attackTimerRef.current);
               attackTimerRef.current = setTimeout(() => setIsUnderAttack(false), 3000);
@@ -163,14 +277,43 @@ export default function DashboardPage() {
     return () => { a.pause(); a.currentTime = 0; };
   }, [viz.sfx, sfxEnabled]);
 
-  /* ── Derived ────────────────────────────────────────────────────────── */
+  /* ── Derived budget math ────────────────────────────────────────────── */
 
-  const budget = profile?.monthly_limit ?? 0;
+  const monthlyLimit = profile?.monthly_limit ?? 0;
+  const totalSpent = useMemo(
+    () => expenses.reduce((sum, e) => sum + (e.amount ?? 0), 0),
+    [expenses],
+  );
+  const budgetLeft = monthlyLimit - totalSpent;
+  const spentPct = monthlyLimit > 0 ? (totalSpent / monthlyLimit) * 100 : 0;
+  const isCooked = spentPct >= 100;
+
+  /* ── Lock to brainrot when cooked ───────────────────────────────────── */
+
+  useEffect(() => {
+    if (isCooked && theme !== "brainrot") {
+      setTheme("brainrot");
+    }
+  }, [isCooked, theme, setTheme]);
+
+  /* ── Heartbeat SFX at 85%+ ──────────────────────────────────────────── */
+
+  useEffect(() => {
+    if (spentPct >= 85 && spentPct < 100) {
+      const hb = new Audio("/assets/sound-effects/heartbeat.mp3");
+      hb.loop = true; hb.volume = 0.15; hb.play().catch(() => {});
+      heartbeatRef.current = hb;
+      return () => { hb.pause(); hb.currentTime = 0; };
+    }
+    heartbeatRef.current?.pause();
+  }, [spentPct >= 85 && spentPct < 100]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const roast = useMemo(() => {
     if (profileLoading) return "Loading...";
     if (!profile) return "Take the quiz to unlock your persona.";
+    if (isCooked) return "You are beyond saving. Welcome to Brainrot.";
     return profile.roast || "Your finances are under surveillance.";
-  }, [profile, profileLoading]);
+  }, [profile, profileLoading, isCooked]);
 
   async function handleAttack(victimId: string, penalty: number) {
     if (!userId) return;
@@ -183,32 +326,69 @@ export default function DashboardPage() {
     } catch (e) { console.error("Sabotage failed:", e); }
   }
 
+  /* ── Recharts data ──────────────────────────────────────────────────── */
+
+  const categoryData = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const e of expenses) {
+      const cat = e.category || e.description || "other";
+      map[cat] = (map[cat] ?? 0) + e.amount;
+    }
+    return Object.entries(map)
+      .map(([name, value]) => ({
+        name: CATEGORY_LABELS[name] || name,
+        value: Math.round(value * 100) / 100,
+        fill: CATEGORY_COLORS[name] || "#6b7280",
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [expenses]);
+
+  const dailyData = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const e of expenses) {
+      const day = e.created_at ? new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Today";
+      map[day] = (map[day] ?? 0) + e.amount;
+    }
+    return Object.entries(map)
+      .map(([day, total]) => ({ day, total: Math.round(total * 100) / 100 }))
+      .reverse()
+      .slice(-7);
+  }, [expenses]);
+
   /* ── Metric cards ───────────────────────────────────────────────────── */
 
   const metrics = [
     {
       label: "Monthly Budget",
-      value: budget > 0 ? USD.format(budget) : "—",
-      sub: budget > 0 ? "AI-calculated limit" : "Take the quiz first",
+      value: monthlyLimit > 0 ? USD.format(monthlyLimit) : "—",
+      sub: monthlyLimit > 0 ? "AI-calculated limit" : "Take the quiz first",
       icon: <DollarSign className="h-5 w-5" />,
       accent: "text-emerald-500 dark:text-emerald-400",
       ring: "ring-emerald-500/10",
+    },
+    {
+      label: "Total Spent",
+      value: USD.format(totalSpent),
+      sub: `${expenses.length} expense${expenses.length !== 1 ? "s" : ""} logged`,
+      icon: <Flame className="h-5 w-5" />,
+      accent: spentPct >= 85 ? "text-red-500" : spentPct >= 50 ? "text-yellow-500" : "text-amber-500 dark:text-amber-400",
+      ring: spentPct >= 85 ? "ring-red-500/10" : "ring-amber-500/10",
+    },
+    {
+      label: "Budget Left",
+      value: USD.format(budgetLeft),
+      sub: budgetLeft <= 0 ? "YOU ARE COOKED" : roast,
+      icon: budgetLeft <= 0 ? <Skull className="h-5 w-5" /> : <Wallet className="h-5 w-5" />,
+      accent: budgetLeft <= 0 ? "text-red-500" : budgetLeft < 100 ? "text-yellow-500" : "text-emerald-500",
+      ring: budgetLeft <= 0 ? "ring-red-500/10" : "ring-zinc-500/10",
     },
     {
       label: "Persona",
       value: profileLoading ? "..." : profile?.persona ?? "???",
       sub: profile?.persona ? "AI-assigned identity" : "Unknown entity",
       icon: <User className="h-5 w-5" />,
-      accent: "text-amber-500 dark:text-amber-400",
-      ring: "ring-amber-500/10",
-    },
-    {
-      label: "Threat Level",
-      value: budget < 200 ? "COOKED" : budget < 400 ? "MID" : "SAFE",
-      sub: roast,
-      icon: budget < 200 ? <Skull className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />,
-      accent: budget < 200 ? "text-red-500" : budget < 400 ? "text-yellow-500" : "text-emerald-500",
-      ring: budget < 200 ? "ring-red-500/10" : "ring-zinc-500/10",
+      accent: "text-violet-500 dark:text-violet-400",
+      ring: "ring-violet-500/10",
     },
   ];
 
@@ -219,10 +399,19 @@ export default function DashboardPage() {
       isUnderAttack
         ? "animate-[screen-shake_0.15s_ease-in-out_infinite] ring-4 ring-red-500/60 ring-inset"
         : ""
-    }`}>
+    } ${isCooked ? "border-2 border-red-500/40" : ""}`}>
+
+      {/* Sabotage flash overlay */}
+      {isUnderAttack && (
+        <div className="pointer-events-none fixed inset-0 z-50 animate-pulse bg-red-600/20" />
+      )}
+
       {/* Top bar */}
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-6">
-        <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Dashboard</h2>
+        <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+          Dashboard
+          {isCooked && <span className="ml-2 text-red-500 animate-pulse">🔥 COOKED</span>}
+        </h2>
         <div className="flex items-center gap-2">
           {viz.sfx && (
             <Button size="icon" variant="ghost" onClick={() => setSfxEnabled((p) => !p)} className="h-8 w-8 rounded-full">
@@ -242,13 +431,13 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-5xl space-y-6 px-6 py-8">
         {/* Metric cards */}
         {profileLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
               <Skeleton key={i} className="h-36 rounded-2xl" />
             ))}
           </div>
         ) : (
-          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {metrics.map((m) => (
               <div
                 key={m.label}
@@ -269,10 +458,82 @@ export default function DashboardPage() {
           </section>
         )}
 
+        {/* Cooked Progression Meter */}
+        {!profileLoading && monthlyLimit > 0 && (
+          <section className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
+            <CookedMeter pct={spentPct} />
+          </section>
+        )}
+
+        {/* Charts row */}
+        {!expensesLoading && expenses.length > 0 && (
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Daily spend bar chart */}
+            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Daily Spending</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={dailyData}>
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="#71717a" />
+                  <YAxis tick={{ fontSize: 11 }} stroke="#71717a" width={50} tickFormatter={(v: number) => `$${v}`} />
+                  <Tooltip
+                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12 }}
+                    labelStyle={{ color: "#a1a1aa" }}
+                    formatter={(value: number | string = 0) => [USD.format(Number(value)), "Spent"]}
+                  />
+                  <Bar dataKey="total" radius={[6, 6, 0, 0]}>
+                    {dailyData.map((_, i) => (
+                      <Cell key={i} fill={i === dailyData.length - 1 ? "#ef4444" : "#3b82f6"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Category pie chart */}
+            <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">By Category</p>
+              <div className="flex items-center gap-4">
+                <ResponsiveContainer width="50%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={40}
+                      strokeWidth={2}
+                      stroke="#18181b"
+                    >
+                      {categoryData.map((entry, i) => (
+                        <Cell key={i} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12 }}
+                      formatter={(value: number | string = 0) => [USD.format(Number(value)), "Spent"]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex flex-col gap-1.5">
+                  {categoryData.map((c) => (
+                    <div key={c.name} className="flex items-center gap-2 text-xs">
+                      <div className="h-2.5 w-2.5 rounded-full" style={{ background: c.fill }} />
+                      <span className="text-zinc-500">{c.name}</span>
+                      <span className="ml-auto font-mono font-bold tabular-nums">{USD.format(c.value)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Expense Form + Sabotage zone */}
         <section className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <div className="lg:col-span-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-            <ExpenseForm userId={userId ?? null} />
+            <ExpenseForm userId={userId ?? null} onSubmit={() => fetchExpenses()} />
           </div>
 
           <div className="lg:col-span-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 flex flex-col items-center justify-center gap-4 text-center">
