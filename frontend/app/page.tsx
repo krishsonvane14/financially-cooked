@@ -1,6 +1,6 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { useTheme } from "@/src/context/ThemeContext";
 
@@ -15,7 +15,7 @@ export default function Home() {
         <h1 className="font-black text-xl tracking-tighter">FINANCIALLY COOKED.</h1>
         <div>
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" forceRedirectUrl="/quiz">
               <button className="px-5 py-2 bg-black text-white font-bold rounded-full hover:bg-gray-800 transition">
                 Log In
               </button>
@@ -39,14 +39,14 @@ export default function Home() {
         {/* Call to Action */}
         <div className="flex justify-center gap-4 pt-4">
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignUpButton mode="modal" forceRedirectUrl="/quiz">
               <button className="px-8 py-4 bg-red-500 text-white font-black text-lg rounded-xl hover:bg-red-600 transition shadow-lg shadow-red-500/30">
                 GET COOKED
               </button>
-            </SignInButton>
+            </SignUpButton>
           </SignedOut>
           <SignedIn>
-            <Link href="/quiz">
+            <Link href="/dashboard">
               <button className="px-8 py-4 bg-red-500 text-white font-black text-lg rounded-xl hover:bg-red-600 transition shadow-lg shadow-red-500/30">
                 ENTER THE DASHBOARD
               </button>
