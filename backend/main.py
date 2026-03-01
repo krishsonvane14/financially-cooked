@@ -1,4 +1,5 @@
 import os
+
 import pandas as pd
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -7,7 +8,7 @@ from pydantic import BaseModel
 from sklearn.cluster import KMeans
 from supabase import Client, create_client
 
-# 1. Environment & Database Setup
+
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -18,7 +19,6 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# 2. FastAPI App Initialization
 app = FastAPI()
 
 app.add_middleware(
@@ -29,14 +29,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 3. Pydantic Models (Input Validation)
+
 class QuizAnswers(BaseModel):
     user_id: str
-    username: str  
     takeout_frequency: int
     impulse_buy_score: int
     entertainment_spend: int
-    selected_theme: str
+    selected_theme: str = "vanilla"
+    username: str | None = None
 
 
 class ExpenseTracker(BaseModel):
@@ -47,12 +47,7 @@ class ExpenseTracker(BaseModel):
 
 class PersonaGenerator:
     def __init__(self) -> None:
-        self.core_by_cluster = {
-            0: "Saver",
-            1: "Balanced",
-            2: "Spender",
-        }
-
+        self.core_by_cluster = {0: "Saver", 1: "Balanced", 2: "Spender"}
         self.suffix_candidates = [
             "of the SkipTheDishes",
             "the Gacha-Lord",
@@ -95,16 +90,10 @@ class PersonaGenerator:
     def _monthly_limit(self, cluster_id: int, takeout: int, impulse: int, entertainment: int) -> float:
         base = {0: 320.0, 1: 480.0, 2: 620.0}.get(cluster_id, 450.0)
         adjustment = (takeout * 12.0) + (entertainment * 8.0) - (impulse * 5.0)
-        limit = max(180.0, min(1200.0, base + adjustment))
-        return round(limit, 2)
+        return round(max(180.0, min(1200.0, base + adjustment)), 2)
 
-    def _theme(self, impulse: int, selected_theme: str) -> str:
-        # Override only if they chose vanilla but have chaotic spending
-        if selected_theme == "vanilla" and impulse > 7:
-            return "brainrot"
-        
-        # Otherwise, let them keep pink, brainrot, or vanilla
-        return selected_theme
+    def _theme(self, impulse: int) -> str:
+        return "brainrot" if impulse > 7 else "vanilla"
 
     def _roast(self, impulse: int) -> str:
         if impulse <= 2:
@@ -117,96 +106,110 @@ class PersonaGenerator:
             return "You and the 'Buy Now' button are in a committed relationship."
         return "Your impulse score is so high even your wallet enabled airplane mode."
 
-    def generate(self, cluster_id: int, takeout: int, impulse: int, entertainment: int, selected_theme: str) -> dict:
+    def generate(self, cluster_id: int, takeout: int, impulse: int, entertainment: int) -> dict:
         prefix = self._prefix_from_volume(takeout, impulse, entertainment)
         core = self._core_from_cluster(cluster_id)
         suffix = self._behavior_suffix(cluster_id, takeout, impulse, entertainment)
 
         return {
             "persona": f"{prefix} {core} {suffix}",
-            "theme": self._theme(impulse, selected_theme),
+            "theme": self._theme(impulse),
             "limit": self._monthly_limit(cluster_id, takeout, impulse, entertainment),
             "roast": self._roast(impulse),
         }
 
-# 4. Global Machine Learning Model & Generator Instance
+
 kmeans_model: KMeans | None = None
 persona_generator = PersonaGenerator()
 
-# 5. Startup Event (Train the Brain ONCE when the server boots)
+
 @app.on_event("startup")
 def train_kmeans_model() -> None:
     global kmeans_model
 
-    # Synthetic training data
-    student_spending_df = pd.DataFrame([
-        {"takeout": 9, "impulse": 8, "entertainment": 9},
-        {"takeout": 8, "impulse": 7, "entertainment": 8},
-        {"takeout": 7, "impulse": 9, "entertainment": 7},
-        {"takeout": 2, "impulse": 2, "entertainment": 3},
-        {"takeout": 3, "impulse": 1, "entertainment": 2},
-        {"takeout": 1, "impulse": 3, "entertainment": 1},
-        {"takeout": 5, "impulse": 4, "entertainment": 5},
-        {"takeout": 4, "impulse": 5, "entertainment": 4},
-        {"takeout": 6, "impulse": 5, "entertainment": 6},
-        {"takeout": 5, "impulse": 6, "entertainment": 5},
-    ])
+    student_spending_df = pd.DataFrame(
+        [
+            {"takeout": 9, "impulse": 8, "entertainment": 9},
+            {"takeout": 8, "impulse": 7, "entertainment": 8},
+            {"takeout": 7, "impulse": 9, "entertainment": 7},
+            {"takeout": 2, "impulse": 2, "entertainment": 3},
+            {"takeout": 3, "impulse": 1, "entertainment": 2},
+            {"takeout": 1, "impulse": 3, "entertainment": 1},
+            {"takeout": 5, "impulse": 4, "entertainment": 5},
+            {"takeout": 4, "impulse": 5, "entertainment": 4},
+            {"takeout": 6, "impulse": 5, "entertainment": 6},
+            {"takeout": 5, "impulse": 6, "entertainment": 5},
+        ]
+    )
 
-    # K-Means algorithm looking for 3 core financial archetypes
     kmeans_model = KMeans(n_clusters=3, random_state=42, n_init=10)
     kmeans_model.fit(student_spending_df[["takeout", "impulse", "entertainment"]])
 
-# 6. Main API Endpoint
+
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
+
 @app.post("/api/quiz")
 def handle_quiz_submission(payload: QuizAnswers):
     if kmeans_model is None:
         raise HTTPException(status_code=500, detail="Model is not initialized")
 
-    # Format the incoming user data for the model
-    input_df = pd.DataFrame([{
-        "takeout": payload.takeout_frequency,
-        "impulse": payload.impulse_buy_score,
-        "entertainment": payload.entertainment_spend,
-    }])
+    input_df = pd.DataFrame(
+        [
+            {
+                "takeout": payload.takeout_frequency,
+                "impulse": payload.impulse_buy_score,
+                "entertainment": payload.entertainment_spend,
+            }
+        ]
+    )
 
-    # Predict the cluster (0, 1, or 2)
     cluster = int(kmeans_model.predict(input_df)[0])
-
     generated = persona_generator.generate(
         cluster,
         payload.takeout_frequency,
         payload.impulse_buy_score,
         payload.entertainment_spend,
-        payload.selected_theme,
     )
 
-    # Save the dynamically generated profile to Supabase
     try:
-        supabase.table("profiles").upsert({
+        profile_payload = {
             "id": payload.user_id,
-            "username": payload.username, 
             "persona": generated["persona"],
             "theme_preference": generated["theme"],
             "monthly_limit": generated["limit"],
             "roast": generated["roast"],
-        }).execute()
+        }
+        if payload.username:
+            profile_payload["username"] = payload.username
+
+        supabase.table("profiles").upsert(profile_payload).execute()
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
 
-    # Return the data to the Next.js frontend
     return {
         "message": "Persona generated successfully.",
         "persona": generated["persona"],
         "monthly_limit": generated["limit"],
         "theme": generated["theme"],
+        "recommended_theme": generated["theme"],
         "roast": generated["roast"],
     }
+
 
 @app.get("/api/leaderboard")
 def get_leaderboard():
     try:
-        response = supabase.table("profiles").select("id, username, persona, monthly_limit").order("monthly_limit", desc=False).execute()
-        return {"rankings": response.data}
+        response = (
+            supabase
+            .table("profiles")
+            .select("id, username, persona, monthly_limit")
+            .order("monthly_limit", desc=False)
+            .execute()
+        )
+        return {"rankings": response.data or []}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Database failure: {exc}")
 
@@ -243,16 +246,18 @@ def log_expense(payload: ExpenseTracker):
         if not response.data:
             raise HTTPException(status_code=404, detail="User not found.")
 
-        current_limit = response.data[0].get("monthly_limit", 0)
+        current_limit = response.data[0].get("monthly_limit", 0) or 0
         new_limit = current_limit - payload.amount
 
         supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload.user_id).execute()
 
-        supabase.table("expenses").insert({
-            "user_id": payload.user_id,
-            "amount": payload.amount,
-            "description": payload.description,
-        }).execute()
+        supabase.table("expenses").insert(
+            {
+                "user_id": payload.user_id,
+                "amount": payload.amount,
+                "description": payload.description,
+            }
+        ).execute()
 
         return {"message": "Expense logged.", "new_limit": new_limit}
     except HTTPException:
