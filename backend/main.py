@@ -408,3 +408,38 @@ def settle_group_debt(payload: SettleDebt):
         return {"message": "The entire group is settled up! All debts cleared."}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+@app.get("/api/expenses/{user_id}")
+def get_user_expenses(user_id: str):
+    try:
+        # Fetch all expenses for the user, newest first
+        res = supabase.table("expenses").select("*").eq("user_id", user_id).order("created_at", desc=True).execute()
+        return {"expenses": res.data or []}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+@app.delete("/api/expenses/{expense_id}")
+def delete_expense(expense_id: str):
+    try:
+        # 1. Fetch the expense to find out how much to refund and to whom
+        exp_res = supabase.table("expenses").select("amount, user_id").eq("id", expense_id).execute()
+        if not exp_res.data:
+            raise HTTPException(status_code=404, detail="Expense not found")
+        
+        expense = exp_res.data[0]
+        amount = expense["amount"]
+        user_id = expense["user_id"]
+
+        # 2. Delete the row from the database
+        supabase.table("expenses").delete().eq("id", expense_id).execute()
+
+        # 3. Add the money back to the user's monthly limit
+        prof_res = supabase.table("profiles").select("monthly_limit").eq("id", user_id).execute()
+        if prof_res.data:
+            current_limit = prof_res.data[0]["monthly_limit"]
+            new_limit = current_limit + amount
+            supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", user_id).execute()
+
+        return {"message": "Expense deleted and budget refunded.", "new_limit": new_limit}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))

@@ -25,6 +25,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import ExpenseForm from "@/components/ExpenseForm";
+import ExpenseLog from "@/components/ExpenseLog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useTheme, Theme } from "@/src/context/ThemeContext";
@@ -138,24 +139,23 @@ export default function DashboardPage() {
 
   /* ── Fetch profile ──────────────────────────────────────────────────── */
 
-  useEffect(() => {
+  const fetchProfile = useCallback(async () => {
     if (!userId) { setProfileLoading(false); return; }
+    try {
+      const res = await fetch(`${apiBase}/api/profile/${userId}`);
+      if (res.status === 404) { setProfile(null); return; }
+      if (!res.ok) { console.error("Profile fetch failed:", await res.text()); setProfile(null); return; }
 
-    (async () => {
-      try {
-        const res = await fetch(`${apiBase}/api/profile/${userId}`);
-        if (res.status === 404) { setProfile(null); return; }
-        if (!res.ok) { console.error("Profile fetch failed:", await res.text()); setProfile(null); return; }
-
-        const data = (await res.json()) as ProfileResponse;
-        setProfile(data);
-        if (typeof data.theme_preference === "string" && isTheme(data.theme_preference)) {
-          setTheme(data.theme_preference);
-        }
-      } catch (e) { console.error("Profile fetch error:", e); setProfile(null); }
-      finally { setProfileLoading(false); }
-    })();
+      const data = (await res.json()) as ProfileResponse;
+      setProfile(data);
+      if (typeof data.theme_preference === "string" && isTheme(data.theme_preference)) {
+        setTheme(data.theme_preference);
+      }
+    } catch (e) { console.error("Profile fetch error:", e); setProfile(null); }
+    finally { setProfileLoading(false); }
   }, [setTheme, userId]);
+
+  useEffect(() => { fetchProfile(); }, [fetchProfile]);
 
   /* ── Fetch expenses ─────────────────────────────────────────────────── */
 
@@ -487,9 +487,19 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* ── Expense Form (full-width) ── */}
-        <section className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-6 shadow-sm">
-          <ExpenseForm userId={userId ?? null} onSubmit={() => fetchExpenses()} />
+        {/* ── Expense Form + Expense Log (2-col) ── */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-6 shadow-sm">
+            <ExpenseForm userId={userId ?? null} onSubmit={() => fetchExpenses()} />
+          </div>
+          <div className="rounded-2xl border border-[var(--theme-border)] bg-[var(--theme-card)] backdrop-blur-xl p-6 shadow-sm">
+            {userId && (
+              <ExpenseLog
+                userId={userId}
+                onBudgetUpdate={() => { fetchProfile(); fetchExpenses(); }}
+              />
+            )}
+          </div>
         </section>
 
         {/* ── SFX toggle (floating, for themed audio) ── */}
