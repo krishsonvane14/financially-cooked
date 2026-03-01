@@ -15,8 +15,8 @@ import {
   Zap,
 } from "lucide-react";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -24,6 +24,7 @@ import {
   Cell,
   PieChart,
   Pie,
+  CartesianGrid,
 } from "recharts";
 import ExpenseForm from "@/components/ExpenseForm";
 import SabotageAttackModal, { Player } from "@/components/SabotageAttackModal";
@@ -175,15 +176,36 @@ export default function DashboardPage() {
   const fetchExpenses = useCallback(async () => {
     if (!userId) { setExpensesLoading(false); return; }
     try {
-      const { data, error } = await supabase
+      // Try with created_at first; fall back to without it if column doesn't exist
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let result: { data: any[] | null; error: any } = await supabase
         .from("expenses")
         .select("id, amount, category, description, created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
-      if (error) { console.error("Expense fetch:", error); setExpenses([]); return; }
-      setExpenses((data as Expense[]) ?? []);
-    } catch (e) { console.error("Expense fetch error:", e); setExpenses([]); }
-    finally { setExpensesLoading(false); }
+
+      if (result.error) {
+        console.error("Expense fetch (with created_at) failed:", JSON.stringify(result.error, null, 2));
+        // Retry without created_at ordering in case column is missing
+        result = await supabase
+          .from("expenses")
+          .select("id, amount, category, description")
+          .eq("user_id", userId);
+
+        if (result.error) {
+          console.error("Expense fetch (fallback) failed:", JSON.stringify(result.error, null, 2));
+          setExpenses([]);
+          return;
+        }
+      }
+
+      setExpenses((result.data as Expense[]) ?? []);
+    } catch (e) {
+      console.error("Expense fetch unexpected error:", e instanceof Error ? { message: e.message, stack: e.stack } : e);
+      setExpenses([]);
+    } finally {
+      setExpensesLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
@@ -328,7 +350,7 @@ export default function DashboardPage() {
 
   /* ── Recharts data ──────────────────────────────────────────────────── */
 
-  const categoryData = useMemo(() => {
+  const pieChartData = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of expenses) {
       const cat = e.category || e.description || "other";
@@ -343,16 +365,26 @@ export default function DashboardPage() {
       .sort((a, b) => b.value - a.value);
   }, [expenses]);
 
-  const dailyData = useMemo(() => {
+  // Line chart data — cumulative spending over days this month
+  const lineChartData = useMemo(() => {
     const map: Record<string, number> = {};
     for (const e of expenses) {
-      const day = e.created_at ? new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Today";
+      const day = e.created_at
+        ? new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
       map[day] = (map[day] ?? 0) + e.amount;
     }
-    return Object.entries(map)
-      .map(([day, total]) => ({ day, total: Math.round(total * 100) / 100 }))
-      .reverse()
-      .slice(-7);
+
+    // Sort chronologically and build cumulative
+    const sorted = Object.entries(map)
+      .map(([day, total]) => ({ day, daily: Math.round(total * 100) / 100 }))
+      .reverse(); // oldest first
+
+    let cumulative = 0;
+    return sorted.map((d) => {
+      cumulative += d.daily;
+      return { ...d, cumulative: Math.round(cumulative * 100) / 100 };
+    });
   }, [expenses]);
 
   /* ── Metric cards ───────────────────────────────────────────────────── */
@@ -468,60 +500,77 @@ export default function DashboardPage() {
         {/* Charts row */}
         {!expensesLoading && expenses.length > 0 && (
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Daily spend bar chart */}
+            {/* Monthly spending line chart */}
             <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
-              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Daily Spending</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={dailyData}>
-                  <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke="#71717a" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="#71717a" width={50} tickFormatter={(v: number) => `$${v}`} />
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Spending Over Time</p>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={lineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                  <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#a1a1aa" }} stroke="#3f3f46" />
+                  <YAxis tick={{ fontSize: 11, fill: "#a1a1aa" }} stroke="#3f3f46" width={55} tickFormatter={(v: number) => `$${v}`} />
                   <Tooltip
-                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12 }}
+                    contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12, color: "#f4f4f5" }}
                     labelStyle={{ color: "#a1a1aa" }}
-                    formatter={(value: number | string = 0) => [USD.format(Number(value)), "Spent"]}
+                    formatter={(value?: number | string, name?: string) => [
+                      USD.format(Number(value ?? 0)),
+                      name === "cumulative" ? "Total" : "Daily",
+                    ]}
                   />
-                  <Bar dataKey="total" radius={[6, 6, 0, 0]}>
-                    {dailyData.map((_, i) => (
-                      <Cell key={i} fill={i === dailyData.length - 1 ? "#ef4444" : "#3b82f6"} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="cumulative"
+                    stroke="#ef4444"
+                    strokeWidth={2.5}
+                    dot={{ fill: "#ef4444", r: 4, strokeWidth: 2, stroke: "#18181b" }}
+                    activeDot={{ r: 6, fill: "#ef4444" }}
+                    name="cumulative"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="daily"
+                    stroke="#3b82f6"
+                    strokeWidth={1.5}
+                    strokeDasharray="5 5"
+                    dot={{ fill: "#3b82f6", r: 3, strokeWidth: 0 }}
+                    name="daily"
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Category pie chart */}
+            {/* Expenses by category pie chart */}
             <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 shadow-sm">
-              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">By Category</p>
+              <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Expenses by Category</p>
               <div className="flex items-center gap-4">
-                <ResponsiveContainer width="50%" height={200}>
+                <ResponsiveContainer width="50%" height={220}>
                   <PieChart>
                     <Pie
-                      data={categoryData}
+                      data={pieChartData}
                       dataKey="value"
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
-                      innerRadius={40}
+                      outerRadius={85}
+                      innerRadius={45}
                       strokeWidth={2}
                       stroke="#18181b"
                     >
-                      {categoryData.map((entry, i) => (
+                      {pieChartData.map((entry, i) => (
                         <Cell key={i} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12 }}
-                      formatter={(value: number | string = 0) => [USD.format(Number(value)), "Spent"]}
+                      contentStyle={{ background: "#18181b", border: "1px solid #27272a", borderRadius: 12, fontSize: 12, color: "#f4f4f5" }}
+                      formatter={(value?: number | string) => [USD.format(Number(value ?? 0)), "Spent"]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="flex flex-col gap-1.5">
-                  {categoryData.map((c) => (
+                <div className="flex flex-col gap-2">
+                  {pieChartData.map((c) => (
                     <div key={c.name} className="flex items-center gap-2 text-xs">
-                      <div className="h-2.5 w-2.5 rounded-full" style={{ background: c.fill }} />
-                      <span className="text-zinc-500">{c.name}</span>
-                      <span className="ml-auto font-mono font-bold tabular-nums">{USD.format(c.value)}</span>
+                      <div className="h-3 w-3 rounded-full shrink-0" style={{ background: c.fill }} />
+                      <span className="text-zinc-400">{c.name}</span>
+                      <span className="ml-auto font-mono font-bold tabular-nums text-zinc-200">{USD.format(c.value)}</span>
                     </div>
                   ))}
                 </div>
