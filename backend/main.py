@@ -369,24 +369,42 @@ def split_group_expense(payload: GroupExpense):
 @app.post("/api/groups/settle")
 def settle_group_debt(payload: SettleDebt):
     try:
-        res = supabase.table("profiles").select("monthly_limit").eq("id", payload.user_id).execute()
-        if not res.data:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        # Settling = paying the group back → deduct from their budget
-        new_limit = res.data[0]["monthly_limit"] - payload.amount
-        supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", payload.user_id).execute()
-
-        # Log ONE positive expense row with category "Settlement"
-        supabase.table("expenses").insert({
-            "user_id": payload.user_id,
-            "amount": payload.amount,
-            "category": "Settlement",
-            "group_id": payload.group_id,
-        }).execute()
-
-        return {"message": "Debt settled. You are slightly less cooked.", "new_limit": new_limit}
-    except HTTPException:
-        raise
+        group_id = payload.group_id
+        
+        # 1. Fetch current balances using your existing function
+        balances_res = get_group_balances(group_id)
+        balances = balances_res["balances"]
+        
+        # 2. Loop through everyone and perfectly offset their debt
+        for member in balances:
+            uid = member["user_id"]
+            net = member["net_balance"]
+            
+            # Skip if they are already perfectly settled
+            if abs(net) < 0.01:
+                continue
+                
+            # If net is negative (they owe money), they must pay: settlement_amount is positive.
+            # If net is positive (they are owed), they receive money: settlement_amount is negative.
+            settlement_amount = -net
+            
+            # 3. Update their personal monthly limit
+            profile_res = supabase.table("profiles").select("monthly_limit").eq("id", uid).execute()
+            if profile_res.data:
+                current_limit = profile_res.data[0]["monthly_limit"]
+                # Subtracting a positive settlement lowers the budget. Subtracting a negative gives money back!
+                new_limit = current_limit - settlement_amount
+                supabase.table("profiles").update({"monthly_limit": new_limit}).eq("id", uid).execute()
+                
+            # 4. Log the offsetting settlement expense
+            supabase.table("expenses").insert({
+                "user_id": uid,
+                "amount": settlement_amount, 
+                "description": "Group Settlement",
+                "category": "Settlement",
+                "group_id": group_id,
+            }).execute()
+        
+        return {"message": "The entire group is settled up! All debts cleared."}
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
