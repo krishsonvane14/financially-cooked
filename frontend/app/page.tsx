@@ -67,7 +67,7 @@ const floatingAssets: {
 const fakeFeed = [
   { user: "SigmaSpender", emoji: "🎮", text: "dropped $50 on Fortnite V-Bucks" },
   { user: "SkibidiSaver", emoji: "🍔", text: "Uber Eats'd a $38 burrito bowl" },
-  { user: "CashQueen", emoji: "💅", text: "bought a $120 candle — 'self care'" },
+  { user: "CashQueen", emoji: "💅", text: "bought a $120 candle - 'self care'" },
   { user: "BudgetBro", emoji: "💸", text: "venmo'd $80 for 'vibes'" },
 ];
 
