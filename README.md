@@ -4,6 +4,10 @@ A multiplayer financial tracker that uses machine learning to calculate your *re
 
 Built in a single weekend by Applied Sciences students who got tired of budgeting apps pretending users are disciplined. We replaced spreadsheets with unsupervised ML, real-time WebSocket sabotage events, and a functional shared debt ledger.
 
+# Demo
+
+[![Watch the video](https://img.youtube.com/vi/g9DgJEQkKM8/hqdefault.jpg)](https://www.youtube.com/watch?v=g9DgJEQkKM8)
+
 
 
 # 🎭 The Jekyll & Hyde Thematic Architecture
